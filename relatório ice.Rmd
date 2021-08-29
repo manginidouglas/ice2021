@@ -1,0 +1,295 @@
+---
+title: "Relatório ICE"
+author: "Douglas Mangini"
+date: "18/08/2021"
+output: 
+  pdf_document:
+    keep_md: yes
+    toc: TRUE
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE, eval = FALSE)
+```
+
+```{r read_files, include=FALSE, eval=TRUE}
+
+# function to read several scripts into one code chunk
+
+read_files <- function(files) {
+  unlist(lapply(files, xfun::read_utf8))
+}
+```
+
+\newpage
+
+# Introdução {#intro}
+
+O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os 100 maiores municípios do Brasil, seus códigos ibge e população estimada^[https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados
+]. Esta planilha será carregada em todos os códigos que seguem.  
+
+Abaixo, os apelidos que dei aos subdeterminantes para facilitar a comunicação. 
+
+```{r tabela, echo = FALSE, eval = TRUE}
+
+library(magrittr)
+
+tibble::tibble(
+determinante = c(rep("Ambiente Regulatório",3),rep("Infraestrutura",2),rep("Mercado",2)),
+
+subdeterminante =  c("Tempo de Processos","Tributação","Complexidade Tributária","Transporte Interurbano","Condições Urbanas","Desenvolvimento Econômico",
+                     "Clientes Potenciais"),
+nomeclatura =  c("sd11","sd12","sd13","sd21","sd22","sd31","sd32")) %>%
+  knitr::kable(caption = "Apelidos dos subdeterminantes")
+
+```
+
+
+
+\newpage
+
+
+# Ambiente regulatório
+
+## Tempo de processos {#sd11}
+
+clique [aqui](#sd11_script) para ver o script
+
+### Tempo de viabilidade de locação
+
+fonte:Dados da Redesim: <https://estatistica.redesim.gov.br/tempos-abertura>.  
+Salvei as 12 planilhas em *~/ambiente_regulatorio/dados_sd11_localiza_nome*. A coluna de interesse é *qtde. hh viabilidade end*. Detalhes estão comentados no script em apêndice. 
+
+### Tempo de registro, cadastro, e viabilidade de nome
+
+fonte:Dados da Redesim: <https://estatistica.redesim.gov.br/tempos-abertura>.  
+Salvei as 12 planilhas em *~/ambiente_regulatorio/dados_sd11_localiza_nome*. As colunas de interesse são *qtde. hh viabilidade de nome*, *qtde. hh liberação dbe*, *qtde. hh horas deferimento*. Detalhes estão comentados no script em apêndice. 
+
+### Taxa de congestionamento em tribunais
+
+Dados do painel CNJ:<https://paineis.cnj.jus.br/QvAJAXZfc/opendoc.htm?document=qvw_l%2FPainelCNJ.qvw&host=QVS%40neodimio03&anonymous=true&sheet=shPDPrincipal>  
+Usei os parâmetros justiça = Justiça Estadual, ano = 2020, campos agrupados = Sede Município, e tipo de variável = novos, pendentes e baixados. Pra cada tipo de variável, baixamos o arquivo em *~/ambiente_regulatorio/* com o nome *sd_11_processos_{tipo de variável}.xlsx*. A taxa líquida de congestionamento é definida^[https://www.cnj.jus.br/gestao-estrategica-e-planejamento/estrategia-nacional-do-poder-judiciario-2009-2014/indicadores/03-taxa-de-congestionamento/
+] como $$1 - \frac{\text{baixados}}{\text{novos + pendentes}}$$.  
+
+
+## Tributação {#sd12}
+
+clique [aqui](#sd12_script) para ver o script
+
+### Alíquota interna do ICMS
+fonte:<https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+Peguei a tabela Receitas Orçamentárias (Anexo I-C), para municípios em 2020. Detalhes estão comentados no script em apêndice. 
+
+### Alíquota interna do IPTU
+
+fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+Peguei a tabela Receitas Orçamentárias (Anexo I-C), para municípios em 2020. Detalhes estão comentados no script em apêndice. 
+
+### Alíquota interna do ISS
+
+fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf> 
+Peguei a tabela Receitas Orçamentárias (Anexo I-C), para municípios em 2020. Detalhes estão comentados no script em apêndice. 
+
+
+### Qualidade da Gestão Fiscal
+fonte: <https://www.firjan.com.br/ifgf/> 
+
+Não há novos dados desde a última edição do ICE, então usamos os valores passados. 
+
+## Complexidade burocrática {#sd13}
+clique [aqui](#sd13_script) para ver o script
+
+### Simplicidade tributária
+
+fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+
+Baixei o arquivo finbramun.csv. Para filtrar as contas orçamentárias corretas, salvei o relatório do ice passado (páginas 15 a 17) e li o pdf no R. Detalhes no script em apêndice. 
+
+### CND's municipais
+
+fonte: <https://www.ibge.gov.br/estatisticas/sociais/saude/10586-pesquisa-de-informacoes-basicas-municipais.html?=&t=downloads>  
+
+Dados de 2019. Utilizei a quarta aba da planilha, coluna MTIC1211. Detalhes no script em apêndice
+
+### Atualização de zoneamento
+
+Não encontrei esta informação na MUNIC de 2019, então reproduzi os dados de 2018, que entraram no ICE 2020. Aparentemente, o IBGE excluiu essa pergunta do questionário.  
+
+\newpage
+
+
+# Infraestrutura
+
+## Transporte interurbano {#sd21}
+
+Para os indicadores de rodovias, portos e aeroportos, importamos os dados georeferenciados de cada estrutura e fizemos operações geométricas para encontrar os indicadores. Por exemplo, encontrar as rodovias que passam pelo município reduz-se a encontrar o número de interseções entre o polígono do município e a linha que descreve a estrada. Esses cálculos estão no script em apêndice. [ver script](#sd21_script)  
+
+### Conectividade das rodovias
+
+fonte dos shape files das rodovias: <http://servicos.dnit.gov.br/vgeo/>  
+
+```{r exemplo_rodovia, echo=FALSE, eval = TRUE, fig.cap="Exemplo de rodovia", out.width = '100%'}
+
+knitr::include_graphics("infraestrutura/rodovias/exemplo_rodovia.png")
+```
+
+
+### Número de decolagens por ano
+
+fonte dos dados de voos: <https://www.anac.gov.br/acesso-a-informacao/dados-abertos/areas-de-atuacao/voos-e-operacoes-aereas/dados-estatisticos-do-transporte-aereo>.   
+fonte dos Shape files dos aeroportos: <https://www.gov.br/infraestrutura/pt-br/assuntos/dados-de-transportes/bit/bitmodosmapas#mapaero>  
+
+Decolagens de voos regulares em 2020 com origem no município.Metade dos municípios que nos interessam não estão na base de dados. Para atribuir-lhes um número total de decolagens, tomamos o aeroporto mais próximo (distância euclidiana). 
+
+```{r aeroporto_plot, echo=FALSE, eval = TRUE, fig.cap="Exemplo: estado de SP e aeroportos mais próximos", out.width = '100%'}
+
+knitr::include_graphics("infraestrutura/aeroportos/sp_airports.png")
+```
+
+
+
+
+### Distância ao porto mais próximo
+
+fonte dos shape files dos portos: <https://www.gov.br/infraestrutura/pt-br/assuntos/dados-de-transportes/bit/bitmodosmapas>  
+
+Menor distância euclidiana entre o município e os portos públicos ou fluvias do Amazonas. Tivemos problemas com Rio Branco, então fizemos manualmente pelo google maps. 
+
+```{r porto_plot, echo=FALSE, eval = TRUE, fig.cap="Exemplo: centro de Ananindeua-PA e portos mais próximos", out.width = '100%'}
+
+knitr::include_graphics("infraestrutura/portos/ananindeua_ports.png")
+```
+
+
+
+
+
+
+
+## Condições urbanas {#sd22}
+
+clique [aqui](#sd22_script) para ver o script
+
+### Acesso à internet rápida
+
+fonte: <https://dados.gov.br/dataset/dados-de-acessos-de-comunicacao-multimidia>  
+
+Número de acessos à internet de alta velocidade (acima de 12Mbps) por habitante, em 2020. 
+
+### Preço médio do m²
+
+### Custo da energia elétrica
+
+fonte distribuidoras: <http://www2.aneel.gov.br/relatoriosrig/(S(fgy4psttnrfsam2x1s40fgib))/relatorio.aspx?folder=sfe&report=DistribuidoradecadaMunicipio>  
+fonte das tarifas: <https://www.aneel.gov.br/ranking-das-tarifas>  
+
+
+### Taxa de Homicídios
+
+fonte: <http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sim/cnv/obt10br.def>  
+
+Mortes em 2019 causadas por agressão, ponderado pelo número estimado de habitantes em 2020. No site do datasus, selecionamos Conteúdo igual a *Óbitos p/ Ocorrência* e Grupo CID-10 igual a *agressões*. Os dados em formato excel estão na pasta de arquivos e o [script](#infra) em R para reproduzir o cálculo no apêndice deste documento. 
+
+\newpage
+
+
+# Mercados
+
+## Desenvolvimento econômico {#sd31}
+clique [aqui](#sd31_script) para ver o script
+
+### índice de desenvolvimento humano
+Não há novos dados desde a última edição do índice^[fonte: http://www.atlasbrasil.org.br/ranking]. Baixei a planilha do google drive e adicionei código ibge e sigla da UF para deixa-la igual as outras. 
+
+### Crescimento médio real do PIB
+
+### Número de exportadoras sediadas no município
+
+## Clientes potenciais {#sd32}
+clique [aqui](#sd32_script) para ver o script
+
+### PIB per capita
+
+### Proporção de grandes empresas 
+
+\newpage 
+
+
+
+# Apêndice {-}
+
+### 100 maiores municípios {#municode}
+
+voltar para [introdução](#intro)
+
+```{r municode, code = read_files('municode.R')}
+```
+
+\newpage 
+
+### sd11 {#sd11_script}
+
+voltar para [Tempo de Processos](#sd11)
+
+```{r sd11, code = read_files('ambiente_regulatorio/sd11.R')}
+```
+
+\newpage 
+
+### sd12 {#sd12_script}
+
+voltar para [Tributação](#sd12)
+
+```{r sd12, code = read_files('ambiente_regulatorio/sd12.R')}
+```
+
+\newpage 
+
+### sd13 {#sd13_script}
+
+voltar para [Complexidade Tributária](#sd13)
+
+```{r sd13, code = read_files('ambiente_regulatorio/sd13.R')}
+```
+
+\newpage 
+
+### sd21 {#sd21_script}
+
+voltar para [Transporte Interurbano](#sd21)
+
+```{r sd21, code = read_files(paste0("infraestrutura/",c("aeroportos","energia_eletrica","portos","rodovias"),"/","sd21_",c("voos.R", "energia.R","portos.R","rodovias.R")))}
+
+```
+
+
+\newpage 
+
+### sd22 {#sd22_script}
+
+voltar para [COndições Urbanas](#sd22)
+
+```{r sd22, code = read_files(paste0("infraestrutura/",c("homicidios","internet","terrenos"),"/","sd22_",c("homicidios.R","internet.R","zap.R")))}
+
+```
+
+\newpage 
+
+### sd31 {#sd31_script}
+
+voltar para [Desenvolvimento Econômico](#sd31)
+
+```{r sd31, code = read_files('mercado/sd31.R')}
+```
+
+\newpage 
+
+### sd32 {#sd32_script}
+
+voltar para [Clientes Potenciais](#sd32)
+
+```{r sd32, code = read_files('mercado/sd32.R')}
+```
+
+
