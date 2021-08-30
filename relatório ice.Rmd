@@ -237,7 +237,7 @@ fonte: <https://www.zapimoveis.com.br/>
 
 Período: 2021
 
-Comentário: raspamos o site a procura de imóveis a venda. Extraímos preço e área útil e fizemos a média para cada município. 
+Comentário: raspamos o site a procura de imóveis a venda. Extraímos preço e área útil e fizemos a média para cada município. Excluímos da do cálculo os anúncios que implicavam um preço de metro quadrado menor do que 100 reais e maior do que 10.000 reais. Para cada município, somamos o preço de todos os anúncios e dividimos pela soma de todas as áreas. Procuramos por 350 anúncios de cada município. Encontramos ao menos 300 observações para todos os municípios, exceto em 9 (ver coluna `amostra` nos dados finais).  
 
 ### Custo da energia elétrica
 
