@@ -26,10 +26,10 @@ read_files <- function(files) {
 
 # Introdução {#intro}
 
-O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os 100 maiores municípios do Brasil, seus códigos ibge e população estimada^[https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados
-]. Esta planilha será carregada em todos os códigos que seguem.  
+O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
+Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municiípios.    
 
-Abaixo, os apelidos que dei aos subdeterminantes para facilitar a comunicação. 
+Abaixo, os nomes que demos aos subdeterminantes para facilitar a comunicação. 
 
 ```{r tabela, echo = FALSE, eval = TRUE}
 
@@ -47,7 +47,9 @@ nomeclatura =  c("sd11","sd12","sd13","sd21","sd22","sd31","sd32")) %>%
 
 
 
+
 \newpage
+
 
 
 # Ambiente regulatório
@@ -58,19 +60,35 @@ clique [aqui](#sd11_script) para ver o script
 
 ### Tempo de viabilidade de locação
 
-fonte:Dados da Redesim: <https://estatistica.redesim.gov.br/tempos-abertura>.  
-Salvei as 12 planilhas em *~/ambiente_regulatorio/dados_sd11_localiza_nome*. A coluna de interesse é *qtde. hh viabilidade end*. Detalhes estão comentados no script em apêndice. 
+Fonte: <https://estatistica.redesim.gov.br/tempos-abertura>.  
+
+Período: 2020    
+
+Cidades faltantes: São José do Rio Preto (SP), Jundiaí (SP), Maringá (PR), Anápolis (GO)  
+
+Comentário: A coluna de interesse é *qtde. hh viabilidade end*. Calculamos o tempo médio por município `tempo_médio` e o seu inverso `sd11_localiza`, que é o indicador procurado. Atribuimos nota zero às cidades faltantes.Detalhes estão comentados no script em apêndice.   
 
 ### Tempo de registro, cadastro, e viabilidade de nome
 
-fonte:Dados da Redesim: <https://estatistica.redesim.gov.br/tempos-abertura>.  
-Salvei as 12 planilhas em *~/ambiente_regulatorio/dados_sd11_localiza_nome*. As colunas de interesse são *qtde. hh viabilidade de nome*, *qtde. hh liberação dbe*, *qtde. hh horas deferimento*. Detalhes estão comentados no script em apêndice. 
+fonte: <https://estatistica.redesim.gov.br/tempos-abertura>.  
+
+Período: 2020 
+
+Cidades faltantes: São José do Rio Preto (SP), Jundiaí (SP), Maringá (PR), Anápolis (GO) 
+
+Comentário: As colunas de interesse são *qtde. hh viabilidade de nome*, *qtde. hh liberação dbe*, *qtde. hh horas deferimento*. Agrupamos por estado e somamos as 3 colunas em `tempo_sum`. O indicador é `sd11_nome`, a média simples por estado. Municípios do mesmo estado terão notas iguais.  
 
 ### Taxa de congestionamento em tribunais
 
-Dados do painel CNJ:<https://paineis.cnj.jus.br/QvAJAXZfc/opendoc.htm?document=qvw_l%2FPainelCNJ.qvw&host=QVS%40neodimio03&anonymous=true&sheet=shPDPrincipal>  
-Usei os parâmetros justiça = Justiça Estadual, ano = 2020, campos agrupados = Sede Município, e tipo de variável = novos, pendentes e baixados. Pra cada tipo de variável, baixamos o arquivo em *~/ambiente_regulatorio/* com o nome *sd_11_processos_{tipo de variável}.xlsx*. A taxa líquida de congestionamento é definida^[https://www.cnj.jus.br/gestao-estrategica-e-planejamento/estrategia-nacional-do-poder-judiciario-2009-2014/indicadores/03-taxa-de-congestionamento/
+Fonte: <https://paineis.cnj.jus.br/QvAJAXZfc/opendoc.htm?document=qvw_l%2FPainelCNJ.qvw&host=QVS%40neodimio03&anonymous=true&sheet=shPDPrincipal>  
+
+Período: 2020  
+
+Cidades faltantes: nenhuma
+
+Comentário: Usei os parâmetros justiça = Justiça Estadual, campos agrupados = Sede Município e tipo de variável = novos, pendentes e baixados. A taxa líquida de congestionamento é definida^[https://www.cnj.jus.br/gestao-estrategica-e-planejamento/estrategia-nacional-do-poder-judiciario-2009-2014/indicadores/03-taxa-de-congestionamento/
 ] como $$1 - \frac{\text{baixados}}{\text{novos + pendentes}}$$.  
+
 
 
 ## Tributação {#sd12}
@@ -78,52 +96,87 @@ Usei os parâmetros justiça = Justiça Estadual, ano = 2020, campos agrupados =
 clique [aqui](#sd12_script) para ver o script
 
 ### Alíquota interna do ICMS
-fonte:<https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
-Peguei a tabela Receitas Orçamentárias (Anexo I-C), para municípios em 2020. Detalhes estão comentados no script em apêndice. 
+Fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+
+Período icms: 2020
+Período pib = 2018
+
+Comentário: Usamos a tabela Receitas Orçamentárias (Anexo I-C). Trabalhamos apenas com receitas brutas realizadas e a conta 1.1.1.8.02.0.0. O indicador é `sd12_icms`, o inverso do icsm por unidade de pib municipal.Detalhes estão comentados no script em apêndice. 
 
 ### Alíquota interna do IPTU
 
 fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
-Peguei a tabela Receitas Orçamentárias (Anexo I-C), para municípios em 2020. Detalhes estão comentados no script em apêndice. 
+
+Período icms: 2020  
+Período pib = 2018 
+
+Cidades faltantes: Brasília (DF), Carapicuíba (SP)  
+
+Comentário: Usamos a tabela Receitas Orçamentárias (Anexo I-C).Trabalhamos apenas com receitas brutas realizadas e as contas   1.1.1.8.01.1.0 e 1.1.1.8.02.3.0. Detalhes estão comentados no script em apêndice. 
 
 ### Alíquota interna do ISS
 
-fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf> 
-Peguei a tabela Receitas Orçamentárias (Anexo I-C), para municípios em 2020. Detalhes estão comentados no script em apêndice. 
+fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+
+Período icms: 2020  
+Período pib = 2018  
+
+Cidades faltantes: Brasília (DF), Carapicuíba (SP), Uberaba (MG), São João de Meriti (RJ)  Belford Roxo (RJ)  
+
+Comentário: Peguei a tabela Receitas Orçamentárias (Anexo I-C). Detalhes estão comentados no script em apêndice. 
 
 
 ### Qualidade da Gestão Fiscal
-fonte: <https://www.firjan.com.br/ifgf/> 
+fonte: <https://www.firjan.com.br/ifgf/>  
 
-Não há novos dados desde a última edição do ICE, então usamos os valores passados. 
+Período: 2018
+
+Comentário: Não há novos dados desde a última edição do ICE, então usamos os valores passados. 
+
+
+
 
 ## Complexidade burocrática {#sd13}
+
 clique [aqui](#sd13_script) para ver o script
 
 ### Simplicidade tributária
 
 fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
 
-Baixei o arquivo finbramun.csv. Para filtrar as contas orçamentárias corretas, salvei o relatório do ice passado (páginas 15 a 17) e li o pdf no R. Detalhes no script em apêndice. 
+Período: 2020  
+
+Cidades faltantes: Brasília (DF)
+
+Comentário: Para filtrar as contas orçamentárias corretas, lemos o relatório do ice passado^[pdf_contas.pdf, pp.15-17] no R. O indicador é `sd13_complexidade`, o produto dos índices de Herfindahl-Hirshmann (ihh) e de visibilidade (iv). O ihh é dado pela soma dos quadrados da participação relativa do tributo na arrecadação total. A visibilidade é dada pela participação relativa de uma soma de de tributos^[IPTU, ITBI, ITR, IRRF] na arrecadação total. Detalhes no script em apêndice. 
 
 ### CND's municipais
 
 fonte: <https://www.ibge.gov.br/estatisticas/sociais/saude/10586-pesquisa-de-informacoes-basicas-municipais.html?=&t=downloads>  
 
-Dados de 2019. Utilizei a quarta aba da planilha, coluna MTIC1211. Detalhes no script em apêndice
+Período: 2019  
+
+Comentário: variável binária `sd13_cnd` igual a 1 se município emite certidão negativa de débitos. Utilizamos a quarta aba da planilha, coluna MTIC1211. Detalhes no script em apêndice.
 
 ### Atualização de zoneamento
 
-Não encontrei esta informação na MUNIC de 2019, então reproduzi os dados de 2018, que entraram no ICE 2020. Aparentemente, o IBGE excluiu essa pergunta do questionário.  
+fonte: <https://www.ibge.gov.br/estatisticas/sociais/saude/10586-pesquisa-de-informacoes-basicas-municipais.html?=&t=downloads>  
+
+Período: 2018
+
+Comentário: quantidade de anos desde que o município mudou a lei de zoneamento. O IBGE excluiu essa pergunta na pesquisa MUNIC 2019, então reproduzimos os dados de 2018.  
 
 \newpage
+
+
+
 
 
 # Infraestrutura
 
 ## Transporte interurbano {#sd21}
 
-Para os indicadores de rodovias, portos e aeroportos, importamos os dados georeferenciados de cada estrutura e fizemos operações geométricas para encontrar os indicadores. Por exemplo, encontrar as rodovias que passam pelo município reduz-se a encontrar o número de interseções entre o polígono do município e a linha que descreve a estrada. Esses cálculos estão no script em apêndice. [ver script](#sd21_script)  
+Para os indicadores de rodovias, portos e aeroportos, importamos os dados georeferenciados de cada estrutura e fizemos operações geométricas para encontrar os indicadores. Por exemplo, encontrar as rodovias que passam por um município reduz-se a encontrar o número de interseções entre o polígono do município e a linha que descreve a estrada. Esses cálculos estão no script em apêndice. [ver script](#sd21_script)  
 
 ### Conectividade das rodovias
 
@@ -137,10 +190,13 @@ knitr::include_graphics("infraestrutura/rodovias/exemplo_rodovia.png")
 
 ### Número de decolagens por ano
 
-fonte dos dados de voos: <https://www.anac.gov.br/acesso-a-informacao/dados-abertos/areas-de-atuacao/voos-e-operacoes-aereas/dados-estatisticos-do-transporte-aereo>.   
+fonte dos dados de voos: <https://www.anac.gov.br/acesso-a-informacao/dados-abertos/areas-de-atuacao/voos-e-operacoes-aereas/dados-estatisticos-do-transporte-aereo>  
+
 fonte dos Shape files dos aeroportos: <https://www.gov.br/infraestrutura/pt-br/assuntos/dados-de-transportes/bit/bitmodosmapas#mapaero>  
 
-Decolagens de voos regulares em 2020 com origem no município.Metade dos municípios que nos interessam não estão na base de dados. Para atribuir-lhes um número total de decolagens, tomamos o aeroporto mais próximo (distância euclidiana). 
+Período: 2020  
+
+Comentário: Decolagens de voos regulares origem no município. Faltam dados para metade dos municípios. Para esses, atribuímos um número total de decolagens com base aeroporto mais próximo (distância euclidiana). 
 
 ```{r aeroporto_plot, echo=FALSE, eval = TRUE, fig.cap="Exemplo: estado de SP e aeroportos mais próximos", out.width = '100%'}
 
@@ -148,22 +204,18 @@ knitr::include_graphics("infraestrutura/aeroportos/sp_airports.png")
 ```
 
 
-
-
 ### Distância ao porto mais próximo
 
 fonte dos shape files dos portos: <https://www.gov.br/infraestrutura/pt-br/assuntos/dados-de-transportes/bit/bitmodosmapas>  
 
-Menor distância euclidiana entre o município e os portos públicos ou fluvias do Amazonas. Tivemos problemas com Rio Branco, então fizemos manualmente pelo google maps. 
+Período: 2020  
+
+Comentário: menor distância euclidiana entre o município e os portos públicos ou fluvias do Amazonas. Tivemos problemas com Rio Branco, então fizemos manualmente pelo google maps. 
 
 ```{r porto_plot, echo=FALSE, eval = TRUE, fig.cap="Exemplo: centro de Ananindeua-PA e portos mais próximos", out.width = '100%'}
 
 knitr::include_graphics("infraestrutura/portos/ananindeua_ports.png")
 ```
-
-
-
-
 
 
 
@@ -175,43 +227,87 @@ clique [aqui](#sd22_script) para ver o script
 
 fonte: <https://dados.gov.br/dataset/dados-de-acessos-de-comunicacao-multimidia>  
 
-Número de acessos à internet de alta velocidade (acima de 12Mbps) por habitante, em 2020. 
+Período: 2020  
+
+Comentário: número de acessos à internet de alta velocidade (acima de 12Mbps) por habitante.
 
 ### Preço médio do m²
+
+fonte: <https://www.zapimoveis.com.br/>  
+
+Período: 2021
+
+Comentário: raspamos o site a procura de imóveis a venda. Extraímos preço e área útil e fizemos a média para cada município. 
 
 ### Custo da energia elétrica
 
 fonte distribuidoras: <http://www2.aneel.gov.br/relatoriosrig/(S(fgy4psttnrfsam2x1s40fgib))/relatorio.aspx?folder=sfe&report=DistribuidoradecadaMunicipio>  
 fonte das tarifas: <https://www.aneel.gov.br/ranking-das-tarifas>  
 
+Período: 2021  
+
+Comentário: Montamos manualmente a base de dados que indica qual distribuidora atende cada município.  
 
 ### Taxa de Homicídios
 
 fonte: <http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sim/cnv/obt10br.def>  
 
-Mortes em 2019 causadas por agressão, ponderado pelo número estimado de habitantes em 2020. No site do datasus, selecionamos Conteúdo igual a *Óbitos p/ Ocorrência* e Grupo CID-10 igual a *agressões*. Os dados em formato excel estão na pasta de arquivos e o [script](#infra) em R para reproduzir o cálculo no apêndice deste documento. 
+Período: 2019  
+
+
+Comentário: mortes causadas por agressão, ponderado pelo número estimado de habitantes em 2020. No site do datasus, selecionamos Conteúdo igual a *Óbitos p/ Ocorrência* e Grupo CID-10 igual a *agressões*. Os dados em formato excel estão na pasta de arquivos e o [script](#infra) em R para reproduzir o cálculo no apêndice deste documento. 
 
 \newpage
-
-
+ 
+ 
 # Mercados
 
 ## Desenvolvimento econômico {#sd31}
 clique [aqui](#sd31_script) para ver o script
 
 ### índice de desenvolvimento humano
-Não há novos dados desde a última edição do índice^[fonte: http://www.atlasbrasil.org.br/ranking]. Baixei a planilha do google drive e adicionei código ibge e sigla da UF para deixa-la igual as outras. 
+
+Fonte: <http://www.atlasbrasil.org.br/ranking>  
+
+Período: 2018  
+
+Comentário: Não há novos dados desde a última edição do índice. Apenas adicionamos as colunas código do município e sigla da UF. 
 
 ### Crescimento médio real do PIB
 
+Fonte: sidra-IBGE  
+
+Período: 2014 a 2018  
+
+Comentário: crescimento médio do pib municipal. Usamos os pacotes `basedosdados` e `sidrar` para encontrar o pib municipal e calcular o deflator do pib. 
+
 ### Número de exportadoras sediadas no município
+
+Fonte 1: Rais-IBGE (via base dos dados)  
+Fonte 2: <https://www.gov.br/produtividade-e-comercio-exterior/pt-br/assuntos/comercio-exterior/estatisticas/empresas-brasileiras-exportadoras-e-importadoras>  
+
+Período: 2019  
+
+Comentário: Dividimos o número de empresas exportadoras pelo total de empresas sediadas no município com pelo menos um funcionário.  
 
 ## Clientes potenciais {#sd32}
 clique [aqui](#sd32_script) para ver o script
 
 ### PIB per capita
 
-### Proporção de grandes empresas 
+Fonte: Sidra-IBGE  
+
+Período: 2018
+
+Comentário: Acessamos os dados via base dos dados. Detalhes no script. 
+
+### Proporção de grandes empresas  
+
+Fonte: Rais-IBGE  
+
+Período: 2019  
+
+Comentário: Razão de duas proporções: empresas grandes por empresas médias e médias por pequenas. Acessamos os dados via base dos dados. O tamanho da empresa é dado pela variável `qtde_vinculos_ativos`. Empresas pequenas têm entre 10 e 49 funcionários; médias entre 50 e 249; grandes, acima de 250. 
 
 \newpage 
 
@@ -219,7 +315,7 @@ clique [aqui](#sd32_script) para ver o script
 
 # Apêndice {-}
 
-### 100 maiores municípios {#municode}
+### maiores municípios {#municode}
 
 voltar para [introdução](#intro)
 
