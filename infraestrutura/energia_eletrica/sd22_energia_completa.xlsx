@@ -1,0 +1,102 @@
+﻿"id_municipio","nome","dist","sigla_uf","tarifa","tarifa_media"
+1500800,"Ananindeua","celpa","PA",0.76597,0.76597
+5201108,"Anápolis","enel go","GO",0.54739,0.54739
+5201405,"Aparecida de Goiânia","enel go","GO",0.54739,0.54739
+2800308,"Aracaju","ese","SE",0.58044,0.58044
+3506003,"Bauru","cpfl paulista","SP",0.59566,0.59566
+1501402,"Belém","celpa","PA",0.76597,0.76597
+3300456,"Belford Roxo","light","RJ",0.69405,0.69405
+3106200,"Belo Horizonte","cemig-d","MG",0.61805,0.61805
+3106705,"Betim","cemig-d","MG",0.61805,0.61805
+4202404,"Blumenau","celesc-dis","SC",0.53224,0.53224
+1400100,"Boa Vista","roraima energia","RR",0.57469,0.57469
+5300108,"Brasília","ceb-dis","DF",0.51478,0.51478
+2905701,"Camaçari","coelba","BA",0.61957,0.61957
+2504009,"Campina Grande","epb","PB",0.56211,0.56211
+3509502,"Campinas","cpfl paulista","SP",0.59566,0.59566
+5002704,"Campo Grande","ems","MS",0.69365,0.69365
+3301009,"Campos dos Goytacazes","enel rj","RJ",0.71444,0.71444
+4304606,"Canoas","rge (agrupada)","RS",0.64309,0.64309
+3510609,"Carapicuíba","enel sp","SP",0.59449,0.59449
+3201308,"Cariacica","edp es","ES",0.61051,0.61051
+2604106,"Caruaru","celpe","PE",0.61948,0.61948
+4104808,"Cascavel","copel-dis","PR",0.55881,0.55881
+2303709,"Caucaia","enel ce","CE",0.58878,0.58878
+4305108,"Caxias do Sul","rge (agrupada)","RS",0.64309,0.64309
+3118601,"Contagem","cemig-d","MG",0.61805,0.61805
+5103403,"Cuiabá","emt","MT",0.6835,0.6835
+4106902,"Curitiba","copel-dis","PR",0.55881,0.55881
+3513801,"Diadema","enel sp","SP",0.59449,0.59449
+3301702,"Duque de Caxias","light","RJ",0.69405,0.704245
+2910800,"Feira de Santana","coelba","BA",0.61957,0.61957
+4205407,"Florianópolis","celesc-dis","SC",0.53224,0.53224
+2304400,"Fortaleza","enel ce","CE",0.58878,0.58878
+3516200,"Franca","cpfl paulista","SP",0.59566,0.59566
+5208707,"Goiânia","enel go","GO",0.54739,0.54739
+4309209,"Gravataí","rge (agrupada)","RS",0.64309,0.64309
+3518701,"Guarujá","cpfl piratininga","SP",0.53355,0.5443
+3518800,"Guarulhos","edp sp","SP",0.54611,0.54611
+3523107,"Itaquaquecetuba","edp sp","SP",0.54611,0.54611
+2607901,"Jaboatão dos Guararapes","celpe","PE",0.61948,0.61948
+2507507,"João Pessoa","epb","PB",0.56211,0.56211
+4209102,"Joinville","celesc-dis","SC",0.53224,0.53224
+3136702,"Juiz de Fora","cemig-d","MG",0.61805,0.61805
+3525904,"Jundiaí","cpfl piratininga","SP",0.53355,0.53355
+3526902,"Limeira","elektro","SP",0.55505,0.55505
+4113700,"Londrina","copel-dis","PR",0.55881,0.55881
+1600303,"Macapá","cea","AP",0.50525,0.50525
+2704302,"Maceió","ceal","AL",0.62611000000000006,0.62611000000000006
+1302603,"Manaus","ame","AM",0.69349,0.69349
+1504208,"Marabá","celpa","PA",0.76597,0.76597
+4115200,"Maringá","copel-dis","PR",0.55881,0.55881
+3529401,"Mauá","enel sp","SP",0.59449,0.59449
+3530607,"Mogi das Cruzes","cermc","SP",0.66199,0.60405
+3143302,"Montes Claros","cemig-d","MG",0.61805,0.61805
+2408003,"Mossoró","cosern","RN",0.55904,0.55904
+2408102,"Natal","cosern","RN",0.55904,0.55904
+3303302,"Niterói","enel rj","RJ",0.71444,0.71444
+3303500,"Nova Iguaçu","light","RJ",0.69405,0.69405
+2609600,"Olinda","celpe","PE",0.61948,0.61948
+3534401,"Osasco","enel sp","SP",0.59449,0.59449
+1721000,"Palmas","eto","TO",0.66799,0.66799
+2610707,"Paulista","celpe","PE",0.61948,0.61948
+4314407,"Pelotas","ceee-d","RS",0.54897,0.54897
+2611101,"Petrolina","epb","PB",0.56211,0.539595
+3303906,"Petrópolis","light","RJ",0.69405,0.704245
+3538709,"Piracicaba","cpfl paulista","SP",0.59566,0.59566
+4119905,"Ponta Grossa","copel-dis","PR",0.55881,0.55881
+4314902,"Porto Alegre","ceee-d","RS",0.54897,0.54897
+1100205,"Porto Velho","ceron","RO",0.51438,0.51438
+3541000,"Praia Grande","cpfl piratininga","SP",0.53355,0.5443
+2611606,"Recife","celpe","PE",0.61948,0.61948
+3154606,"Ribeirão das Neves","cemig-d","MG",0.61805,0.61805
+3543402,"Ribeirão Preto","cpfl paulista","SP",0.59566,0.59566
+1200401,"Rio Branco","eletroacre","AC",0.58191,0.58191
+3304557,"Rio de Janeiro","light","RJ",0.69405,0.69405
+2927408,"Salvador","coelba","BA",0.61957,0.61957
+4316907,"Santa Maria","rge (agrupada)","RS",0.64309,0.62432
+1506807,"Santarém","celpa","PA",0.76597,0.76597
+3547809,"Santo André","enel sp","SP",0.59449,0.59449
+3548500,"Santos","cpfl piratininga","SP",0.53355,0.5443
+3548708,"São Bernardo do Campo","enel sp","SP",0.59449,0.59449
+3304904,"São Gonçalo","enel rj","RJ",0.71444,0.71444
+3305109,"São João de Meriti","light","RJ",0.69405,0.69405
+3549805,"São José do Rio Preto","cerrp","SP",0.67801,0.6559066666666666
+3549904,"São José dos Campos","edp sp","SP",0.54611,0.54611
+4125506,"São José dos Pinhais","copel-dis","PR",0.55881,0.55881
+2111300,"São Luís","cemar","MA",0.62821,0.62821
+3550308,"São Paulo","enel sp","SP",0.59449,0.6416
+3551009,"São Vicente","cpfl piratininga","SP",0.53355,0.53355
+3205002,"Serra","edp es","ES",0.61051,0.61051
+3552205,"Sorocaba","cerim","SP",0.65332,0.5934349999999999
+3552403,"Sumaré","cpfl paulista","SP",0.59566,0.59566
+3552502,"Suzano","cermc","SP",0.66199,0.60405
+3552809,"Taboão da Serra","enel sp","SP",0.59449,0.59449
+3554102,"Taubaté","edp sp","SP",0.54611,0.54611
+2211001,"Teresina","cepisa","PI",0.58182,0.58182
+3170107,"Uberaba","cemig-d","MG",0.61805,0.61805
+3170206,"Uberlândia","cemig-d","MG",0.61805,0.61805
+5108402,"Várzea Grande","emt","MT",0.6835,0.6835
+3205200,"Vila Velha","edp es","ES",0.61051,0.61051
+3205309,"Vitória","edp es","ES",0.61051,0.61051
+2933307,"Vitória da Conquista","coelba","BA",0.61957,0.61957

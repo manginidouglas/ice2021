@@ -1,0 +1,102 @@
+﻿"id_municipio","sigla_uf","nome","i212","sigla_aero","sigla_uf_ref","nome_ref"
+3518800,"SP","Guarulhos",68599,NA,NA,NA
+3523107,"SP","Itaquaquecetuba",68599,"SBGR","SP","Guarulhos"
+3530607,"SP","Mogi Das Cruzes",68599,"SBGR","SP","Guarulhos"
+3552502,"SP","Suzano",68599,"SBGR","SP","Guarulhos"
+3304557,"RJ","Rio De Janeiro",37407,NA,NA,NA
+3509502,"SP","Campinas",33199,NA,NA,NA
+3526902,"SP","Limeira",33199,"SBKP","SP","Campinas"
+3538709,"SP","Piracicaba",33199,"SBKP","SP","Campinas"
+3552205,"SP","Sorocaba",33199,"SBKP","SP","Campinas"
+3552403,"SP","Sumaré",33199,"SBKP","SP","Campinas"
+5300108,"DF","Brasília",29370,NA,NA,NA
+3550308,"SP","São Paulo",28591,NA,NA,NA
+3510609,"SP","Carapicuíba",28589,"SBSP","SP","São Paulo"
+3513801,"SP","Diadema",28589,"SBSP","SP","São Paulo"
+3518701,"SP","Guarujá",28589,"SBSP","SP","São Paulo"
+3529401,"SP","Mauá",28589,"SBSP","SP","São Paulo"
+3547809,"SP","Santo André",28589,"SBSP","SP","São Paulo"
+3548500,"SP","Santos",28589,"SBSP","SP","São Paulo"
+3548708,"SP","São Bernardo Do Campo",28589,"SBSP","SP","São Paulo"
+3552809,"SP","Taboão Da Serra",28589,"SBSP","SP","São Paulo"
+3303302,"RJ","Niterói",22210,"SBRJ","RJ","Rio De Janeiro"
+3304904,"RJ","São Gonçalo",22210,"SBRJ","RJ","Rio De Janeiro"
+2611606,"PE","Recife",18195,NA,NA,NA
+2607901,"PE","Jaboatão Dos Guararapes",18195,"SBRF","PE","Recife"
+2609600,"PE","Olinda",18195,"SBRF","PE","Recife"
+2610707,"PE","Paulista",18195,"SBRF","PE","Recife"
+3136702,"MG","Juiz De Fora",15047,"SBGL","RJ","Rio De Janeiro"
+3300456,"RJ","Belford Roxo",15047,"SBGL","RJ","Rio De Janeiro"
+3301702,"RJ","Duque De Caxias",15047,"SBGL","RJ","Rio De Janeiro"
+3303500,"RJ","Nova Iguaçu",15047,"SBGL","RJ","Rio De Janeiro"
+3303906,"RJ","Petrópolis",15047,"SBGL","RJ","Rio De Janeiro"
+3305109,"RJ","São João De Meriti",15047,"SBGL","RJ","Rio De Janeiro"
+4314902,"RS","Porto Alegre",13943,NA,NA,NA
+4304606,"RS","Canoas",13943,"SBPA","RS","Porto Alegre"
+4309209,"RS","Gravataí",13943,"SBPA","RS","Porto Alegre"
+2927408,"BA","Salvador",13633,NA,NA,NA
+2905701,"BA","Camaçari",13633,"SBSV","BA","Salvador"
+4125506,"PR","São José Dos Pinhais",11814,NA,NA,NA
+4106902,"PR","Curitiba",11814,"SBCT","PR","São José Dos Pinhais"
+2304400,"CE","Fortaleza",10193,NA,NA,NA
+2303709,"CE","Caucaia",10193,"SBFZ","CE","Fortaleza"
+1501402,"PA","Belém",8334,NA,NA,NA
+1302603,"AM","Manaus",8013,NA,NA,NA
+4205407,"SC","Florianópolis",6901,NA,NA,NA
+5108402,"MT","Várzea Grande",6655,NA,NA,NA
+5103403,"MT","Cuiabá",6655,"SBCY","MT","Várzea Grande"
+3205309,"ES","Vitória",6592,NA,NA,NA
+3201308,"ES","Cariacica",6592,"SBVT","ES","Vitória"
+3205002,"ES","Serra",6592,"SBVT","ES","Vitória"
+3205200,"ES","Vila Velha",6592,"SBVT","ES","Vitória"
+5208707,"GO","Goiânia",5640,NA,NA,NA
+5201108,"GO","Anápolis",5640,"SBGO","GO","Goiânia"
+5201405,"GO","Aparecida De Goiânia",5640,"SBGO","GO","Goiânia"
+2704302,"AL","Maceió",3669,"SBMO","AL","Rio Largo"
+4202404,"SC","Blumenau",3626,"SBNF","SC","Navegantes"
+2111300,"MA","São Luís",3094,NA,NA,NA
+3543402,"SP","Ribeirão Preto",3074,NA,NA,NA
+5002704,"MS","Campo Grande",2902,NA,NA,NA
+2408102,"RN","Natal",2777,"SBJP","PB","Santa Rita"
+2507507,"PB","João Pessoa",2777,"SBJP","PB","Santa Rita"
+3170206,"MG","Uberlândia",2629,NA,NA,NA
+2800308,"SE","Aracaju",2527,NA,NA,NA
+2211001,"PI","Teresina",2122,NA,NA,NA
+3549805,"SP","São José Do Rio Preto",1827,NA,NA,NA
+4113700,"PR","Londrina",1799,NA,NA,NA
+1100205,"RO","Porto Velho",1738,NA,NA,NA
+4115200,"PR","Maringá",1556,NA,NA,NA
+1506807,"PA","Santarém",1498,NA,NA,NA
+1600303,"AP","Macapá",1271,NA,NA,NA
+2933307,"BA","Vitória Da Conquista",1243,NA,NA,NA
+2611101,"PE","Petrolina",1127,NA,NA,NA
+1721000,"TO","Palmas",1126,NA,NA,NA
+4209102,"SC","Joinville",988,NA,NA,NA
+1200401,"AC","Rio Branco",911,NA,NA,NA
+3143302,"MG","Montes Claros",801,NA,NA,NA
+1504208,"PA","Marabá",769,NA,NA,NA
+4104808,"PR","Cascavel",721,NA,NA,NA
+1400100,"RR","Boa Vista",714,NA,NA,NA
+2504009,"PB","Campina Grande",543,NA,NA,NA
+4305108,"RS","Caxias Do Sul",276,NA,NA,NA
+3525904,"SP","Jundiaí",186,NA,NA,NA
+3170107,"MG","Uberaba",179,NA,NA,NA
+3301009,"RJ","Campos Dos Goytacazes",146,NA,NA,NA
+4119905,"PR","Ponta Grossa",134,NA,NA,NA
+3516200,"SP","Franca",114,NA,NA,NA
+4314407,"RS","Pelotas",85,NA,NA,NA
+4316907,"RS","Santa Maria",84,NA,NA,NA
+2408003,"RN","Mossoró",76,NA,NA,NA
+3549904,"SP","São José Dos Campos",76,NA,NA,NA
+3554102,"SP","Taubaté",76,"SBSJ","SP","São José Dos Campos"
+3506003,"SP","Bauru",68,"SJTC","SP","Arealva"
+2604106,"PE","Caruaru",64,NA,NA,NA
+1500800,"PA","Ananindeua",17,"SBJC","PA","Belém"
+2910800,"BA","Feira De Santana",11,NA,NA,NA
+3541000,"SP","Praia Grande",10,"SDIM","SP","Itanhaém"
+3551009,"SP","São Vicente",10,"SDIM","SP","Itanhaém"
+3106200,"MG","Belo Horizonte",6,NA,NA,NA
+3106705,"MG","Betim",6,"SBBH","MG","Belo Horizonte"
+3118601,"MG","Contagem",6,"SBBH","MG","Belo Horizonte"
+3154606,"MG","Ribeirão Das Neves",6,"SBBH","MG","Belo Horizonte"
+3534401,"SP","Osasco",2,"SBMT","SP","São Paulo"
