@@ -1,12 +1,18 @@
+#
+#
+# SD21 - INFRAESTRUTURA - TRANSPORTE INTERURBANO
+
 library(tidyverse)
 library(sf)
 library(geobr)
 
 # municipios --------------------------------------------------------------
 mcoords <- read_municipality() %>% # coordenadas dos municipios
-  select(id_municipio = 1, nome = 2, geom = 5)
+  select(id_municipio = 1,
+         nome = 2,
+         geom = 5)
 
-municode <- read_csv("municode.csv") %>% 
+municode <- read_csv("municode.csv") %>%
   select(id_municipio, sigla_uf, nome) %>%
   mutate(nome = str_to_title(nome)) %>%
   left_join(mcoords, keep = FALSE)
@@ -18,7 +24,8 @@ municode <- read_csv("municode.csv") %>%
 #      junkpaths = TRUE, overwrite = TRUE)
 
 
-aeroshp <- read_sf("infraestrutura/aeroportos/voos_shapefiles/Aerodromos.shp")
+aeroshp <-
+  read_sf("infraestrutura/aeroportos/voos_shapefiles/Aerodromos.shp")
 
 siglas_geo <- aeroshp %>%
   mutate(nm_municip = str_to_title(nm_municip)) %>%
@@ -32,21 +39,25 @@ siglas_geo <- aeroshp %>%
 #      junkpaths = TRUE, overwrite = TRUE)
 
 # voos no mundo
-voos <- read.delim(
-  "infraestrutura/aeroportos/dados_voos/Dados Estat¡sticos.csv",sep = ";")
+voos <- read.delim("infraestrutura/aeroportos/dados_voos/Dados Estat¡sticos.csv",
+                   sep = ";")
 
 # no br
 voos_br <- voos %>%
-  as_tibble() %>% 
-  select(ANO,MÊS,contains("AEROPORTO.DE.ORIGEM"), GRUPO.DE.VOO, DECOLAGENS) %>%
-  filter(ANO == 2020, 
+  as_tibble() %>%
+  select(ANO,
+         MÊS,
+         contains("AEROPORTO.DE.ORIGEM"),
+         GRUPO.DE.VOO,
+         DECOLAGENS) %>%
+  filter(ANO == 2020,
          AEROPORTO.DE.ORIGEM..PAÍS. == "BRASIL",
-         GRUPO.DE.VOO == "REGULAR")%>%
+         GRUPO.DE.VOO == "REGULAR") %>%
   rename(sigla_aero = AEROPORTO.DE.ORIGEM..SIGLA.,
          nome = AEROPORTO.DE.ORIGEM..NOME.,
          sigla_uf = AEROPORTO.DE.ORIGEM..UF.) %>%
   mutate(nome = str_to_title(nome),
-         sigla_uf = if_else(nome == "Guaíra","PR",sigla_uf)) %>% # dados errados 
+         sigla_uf = if_else(nome == "Guaíra", "PR", sigla_uf)) %>% # dados errados
   group_by(sigla_aero, sigla_uf, nome) %>%
   summarise(decolagens = sum(DECOLAGENS, na.rm = TRUE)) %>%
   ungroup()
@@ -54,24 +65,24 @@ voos_br <- voos %>%
 # no br e nos 100 maiores munipios
 
 decolagens <- voos_br %>%
-  group_by(sigla_uf,nome) %>%
+  group_by(sigla_uf, nome) %>%
   summarise(decolagens = sum(decolagens, na.rm = TRUE)) %>%
   ungroup() %>%
   right_join(municode) %>%
-  select(id_municipio,everything())%>% 
+  select(id_municipio, everything()) %>%
   arrange(id_municipio)
 
 # nao estao na lista
 naotem <- decolagens %>% filter(is.na(decolagens))
 
 # geolocaliza os aeroportos br
-voos_br<- left_join(voos_br, siglas_geo)
+voos_br <- left_join(voos_br, siglas_geo)
 
 # data viz ----------------------------------------------------------------
 #  br_airports <- ggplot()+
-#  geom_sf(data = geobr::read_state())+ # mapa base com shapes dos estados br 
+#  geom_sf(data = geobr::read_state())+ # mapa base com shapes dos estados br
 #  geom_sf(data = naotem$geometry, fill = "red")+
-#    geom_sf(data = voos_br$geometry)+ 
+#    geom_sf(data = voos_br$geometry)+
 #  theme(panel.background = element_blank(),
 #        axis.text = element_blank(),
 #        axis.ticks = element_blank())
@@ -81,7 +92,7 @@ voos_br<- left_join(voos_br, siglas_geo)
 # sp_voos <- filter(voos_br, sigla_uf == "SP") %>% pull(geometry)
 
 # sp_airports <- ggplot()+
-#  geom_sf(data = geobr::read_state(code_state = "SP"))+ 
+#  geom_sf(data = geobr::read_state(code_state = "SP"))+
 #  geom_sf(data =  sp, fill = "red")+
 #  geom_sf(data = sp_voos)+
 #  theme(panel.background = element_blank(),
@@ -94,7 +105,6 @@ voos_br<- left_join(voos_br, siglas_geo)
 # achar um aeroporto para os muni faltantes ------------------------------------
 
 aeroprox <- function(id) {
-  
   mun <- filter(naotem, id_municipio == id) %>%
     st_as_sf()
   
@@ -103,30 +113,34 @@ aeroprox <- function(id) {
   
   voos_br %>% filter(row_number() == r) %>%
     as.data.frame() %>%
-   select(sigla_aero)
-}  
+    select(sigla_aero)
+}
 
 # decolagens com base em aeroporto mais perto
-siglas_faltantes <- naotem %>% 
-  as.data.frame() %>% 
-  pull(id_municipio) %>% 
-  map(aeroprox) %>% 
-  unlist() 
+siglas_faltantes <- naotem %>%
+  as.data.frame() %>%
+  pull(id_municipio) %>%
+  map(aeroprox) %>%
+  unlist()
 
 naotem <- naotem %>%
   as.data.frame() %>%
   select(1:3) %>%
   bind_cols(siglas_faltantes) %>%
   rename(sigla_aero = 4) %>%
-  left_join(voos_br, by = "sigla_aero", suffix = c("","_ref")) %>%
+  left_join(voos_br, by = "sigla_aero", suffix = c("", "_ref")) %>%
   select(!geometry)
 
 # colunas _ref NA significam aeroporto na cidade
-sd21_voos<- decolagens %>%
+sd21_voos <- decolagens %>%
   as.data.frame() %>%
   select(!geom) %>%
   filter(!is.na(decolagens)) %>%
   bind_rows(naotem) %>%
-  arrange(-decolagens)
+  arrange(-decolagens) %>%
+  rename(i212 = decolagens)
 
-write_excel_csv(sd21_voos,"dados_finais/sd21_voos.xlsx")
+write_excel_csv(sd21_voos, "infraestrutura/aeroportos/sd21_voos_completo.xlsx")
+
+sd21_voos %>% select(1,2,3,4) %>% write_excel_csv("dados_finais/sd21_voos.xlsx")
+
