@@ -27,7 +27,7 @@ read_files <- function(files) {
 # Introdução {#intro}
 
 O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
-Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municiípios.    
+Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municípios.    
 
 Abaixo, os nomes que demos aos subdeterminantes para facilitar a comunicação. 
 
@@ -41,7 +41,7 @@ determinante = c(rep("Ambiente Regulatório",3),rep("Infraestrutura",2),rep("Mer
 subdeterminante =  c("Tempo de Processos","Tributação","Complexidade Tributária","Transporte Interurbano","Condições Urbanas","Desenvolvimento Econômico",
                      "Clientes Potenciais"),
 nomeclatura =  c("sd11","sd12","sd13","sd21","sd22","sd31","sd32")) %>%
-  knitr::kable(caption = "Apelidos dos subdeterminantes")
+  knitr::kable(caption = "nomeclatura")
 
 ```
 
@@ -66,7 +66,7 @@ Período: 2020
 
 Cidades faltantes: São José do Rio Preto (SP), Jundiaí (SP), Maringá (PR), Anápolis (GO)  
 
-Comentário: A coluna de interesse é *qtde. hh viabilidade end*. Calculamos o tempo médio por município `tempo_médio` e o seu inverso `sd11_localiza`, que é o indicador procurado. Atribuimos nota zero às cidades faltantes.Detalhes estão comentados no script em apêndice.   
+Comentário: A coluna de interesse é *qtde. hh viabilidade end*. Calculamos o tempo médio por município `tempo_médio` e o seu inverso `sd11_localiza`, que é o indicador procurado. Atribuimos nota zero às cidades faltantes. Detalhes estão comentados no script em apêndice.   
 
 ### Tempo de registro, cadastro, e viabilidade de nome
 
@@ -86,7 +86,7 @@ Período: 2020
 
 Cidades faltantes: nenhuma
 
-Comentário: Usei os parâmetros justiça = Justiça Estadual, campos agrupados = Sede Município e tipo de variável = novos, pendentes e baixados. A taxa líquida de congestionamento é definida^[https://www.cnj.jus.br/gestao-estrategica-e-planejamento/estrategia-nacional-do-poder-judiciario-2009-2014/indicadores/03-taxa-de-congestionamento/
+Comentário: Usamos os parâmetros justiça = Justiça Estadual, campos agrupados = Sede Município e tipo de variável = novos, pendentes e baixados. A taxa líquida de congestionamento é definida^[https://www.cnj.jus.br/gestao-estrategica-e-planejamento/estrategia-nacional-do-poder-judiciario-2009-2014/indicadores/03-taxa-de-congestionamento/
 ] como $$1 - \frac{\text{baixados}}{\text{novos + pendentes}}$$.  
 
 
@@ -99,13 +99,13 @@ clique [aqui](#sd12_script) para ver o script
 Fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
 
 Período icms: 2020
-Período pib = 2018
+Período pib:  2018
 
-Comentário: Usamos a tabela Receitas Orçamentárias (Anexo I-C). Trabalhamos apenas com receitas brutas realizadas e a conta 1.1.1.8.02.0.0. O indicador é `sd12_icms`, o inverso do icsm por unidade de pib municipal.Detalhes estão comentados no script em apêndice. 
+Comentário: Usamos a tabela Receitas Orçamentárias (Anexo I-C). Trabalhamos apenas com receitas brutas realizadas e a conta 1.1.1.8.02.0.0. O indicador é `sd12_icms`, o inverso do icms por unidade de pib municipal. Detalhes estão comentados no script em apêndice. 
 
 ### Alíquota interna do IPTU
 
-fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+Fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
 
 Período icms: 2020  
 Período pib = 2018 
@@ -116,18 +116,18 @@ Comentário: Usamos a tabela Receitas Orçamentárias (Anexo I-C).Trabalhamos ap
 
 ### Alíquota interna do ISS
 
-fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+Fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
 
 Período icms: 2020  
 Período pib = 2018  
 
 Cidades faltantes: Brasília (DF), Carapicuíba (SP), Uberaba (MG), São João de Meriti (RJ)  Belford Roxo (RJ)  
 
-Comentário: Peguei a tabela Receitas Orçamentárias (Anexo I-C). Detalhes estão comentados no script em apêndice. 
+Comentário:  Usamos a tabela Receitas Orçamentárias (Anexo I-C). Detalhes estão comentados no script em apêndice. 
 
 
 ### Qualidade da Gestão Fiscal
-fonte: <https://www.firjan.com.br/ifgf/>  
+Fonte: <https://www.firjan.com.br/ifgf/>  
 
 Período: 2018
 
@@ -142,7 +142,7 @@ clique [aqui](#sd13_script) para ver o script
 
 ### Simplicidade tributária
 
-fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
+Fonte: <https://siconfi.tesouro.gov.br/siconfi/index.jsf>  
 
 Período: 2020  
 
@@ -152,7 +152,7 @@ Comentário: Para filtrar as contas orçamentárias corretas, lemos o relatório
 
 ### CND's municipais
 
-fonte: <https://www.ibge.gov.br/estatisticas/sociais/saude/10586-pesquisa-de-informacoes-basicas-municipais.html?=&t=downloads>  
+Fonte: <https://www.ibge.gov.br/estatisticas/sociais/saude/10586-pesquisa-de-informacoes-basicas-municipais.html?=&t=downloads>  
 
 Período: 2019  
 
@@ -180,7 +180,7 @@ Para os indicadores de rodovias, portos e aeroportos, importamos os dados georef
 
 ### Conectividade das rodovias
 
-fonte dos shape files das rodovias: <http://servicos.dnit.gov.br/vgeo/>  
+Fonte dos shape files das rodovias: <http://servicos.dnit.gov.br/vgeo/>  
 
 ```{r exemplo_rodovia, echo=FALSE, eval = TRUE, fig.cap="Exemplo de rodovia", out.width = '100%'}
 
@@ -366,7 +366,7 @@ voltar para [Transporte Interurbano](#sd21)
 
 voltar para [COndições Urbanas](#sd22)
 
-```{r sd22, code = read_files(paste0("infraestrutura/",c("homicidios","internet","terrenos"),"/","sd22_",c("homicidios.R","internet.R","zap.R")))}
+```{r sd22, code = read_files(paste0("infraestrutura/",c("homicidios","internet","terrenos"),"/","sd22_",c("homicidios.R","internet.R","m2.R")))}
 
 ```
 

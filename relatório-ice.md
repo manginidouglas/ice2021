@@ -36,7 +36,9 @@ Table: Apelidos dos subdeterminantes
 
 
 
+
 \newpage
+
 
 
 # Ambiente regulatório
@@ -49,7 +51,7 @@ clique [aqui](#sd11_script) para ver o script
 
 Fonte: <https://estatistica.redesim.gov.br/tempos-abertura>.  
 
-Período: 2020  
+Período: 2020    
 
 Cidades faltantes: São José do Rio Preto (SP), Jundiaí (SP), Maringá (PR), Anápolis (GO)  
 
@@ -124,6 +126,7 @@ Comentário: Não há novos dados desde a última edição do ICE, então usamos
 
 
 ## Complexidade burocrática {#sd13}
+
 clique [aqui](#sd13_script) para ver o script
 
 ### Simplicidade tributária
@@ -153,6 +156,7 @@ Período: 2018
 Comentário: quantidade de anos desde que o município mudou a lei de zoneamento. O IBGE excluiu essa pergunta na pesquisa MUNIC 2019, então reproduzimos os dados de 2018.  
 
 \newpage
+
 
 
 
@@ -219,7 +223,7 @@ fonte: <https://www.zapimoveis.com.br/>
 
 Período: 2021
 
-Comentário: raspamos o site a procura de imóveis a venda. Extraímos preço e área útil e fizemos a média para cada município. 
+Comentário: raspamos o site a procura de imóveis a venda. Extraímos preço e área útil e fizemos a média para cada município. Excluímos da do cálculo os anúncios que implicavam um preço de metro quadrado menor do que 100 reais e maior do que 10.000 reais. Para cada município, somamos o preço de todos os anúncios e dividimos pela soma de todas as áreas. Procuramos por 350 anúncios de cada município. Encontramos ao menos 300 observações para todos os municípios, exceto em 9 (ver coluna `amostra` nos dados finais).  
 
 ### Custo da energia elétrica
 
@@ -240,6 +244,7 @@ Período: 2019
 Comentário: mortes causadas por agressão, ponderado pelo número estimado de habitantes em 2020. No site do datasus, selecionamos Conteúdo igual a *Óbitos p/ Ocorrência* e Grupo CID-10 igual a *agressões*. Os dados em formato excel estão na pasta de arquivos e o [script](#infra) em R para reproduzir o cálculo no apêndice deste documento. 
 
 \newpage
+ 
  
 # Mercados
 
@@ -291,6 +296,7 @@ Período: 2019
 Comentário: Razão de duas proporções: empresas grandes por empresas médias e médias por pequenas. Acessamos os dados via base dos dados. O tamanho da empresa é dado pela variável `qtde_vinculos_ativos`. Empresas pequenas têm entre 10 e 49 funcionários; médias entre 50 e 249; grandes, acima de 250. 
 
 \newpage 
+
 
 
 # Apêndice {-}
@@ -1110,189 +1116,125 @@ internet <- df %>%
   mutate(acessos_hab = acessos/pop)
 
 write_excel_csv(internet,"dados_finais/sd22_internet.xlsx")
-library(basedosdados)
+#
+#
+# SD22 - PRECO DO METRO QUADRADO ------------------------------------------
+
+# bibliotecas -------------------------------------------------------------
+library(httr)
 library(tidyverse)
+library(basedosdados)
 library(abjutils)
 
-zap_download_page <- function(pag, nome_uf, nome, adress, dir, n) {
+# funcao para baixar dados do site ----------------------------------------
+
+get_muni <- function(uf, muni) {
+  # import data-----------------------------------------------------------------
+  u <- "https://glue-api.zapimoveis.com.br/v2/listings"
+  query <- list(
+    business = "SALE",
+    categoryPage = "RESULT",
+    includeFields = "search",
+    listingType = "USED",
+    addressState = uf,
+    addressCity = muni,
+    portal = "ZAP",
+    addressType = "city",
+    size = "350"
+  )
+  h <- httr::add_headers("X-domain" = "www.zapimoveis.com.br")
   
-  if (pag > 1) {
-    message("Page ", pag, " of ", n, "...", appendLF = FALSE)
-  } else {
-    message("Page ", pag, "...", appendLF = FALSE)
+  resultado <- GET(u, query = query, h) %>%
+    content() %>%
+    pluck("search", "result", "listings")
+  
+  # explore -----------------------------------------------------------------
+  # substitui NULL (ausencia de dado) por NA (indica que nao ha dado) 
+  nullToNA <- function(x) {
+    x[unlist(map(x, is.null))] <- NA
+    return(x)
   }
   
-  f <- sprintf("%s/%s/%06d.json", dir, nome ,as.numeric(pag))
+  area <- resultado %>%
+    map(~ pluck(., "listing", "usableAreas")) %>%
+    nullToNA() %>%
+    unlist() %>%
+    as.numeric()
   
-  if (!file.exists(f)) {
-    Sys.sleep(1)
-    u <- "https://glue-api.zapimoveis.com.br/v2/listings"
-    query <- list(
-      business = "SALE",
-      categoryPage = "RESULT",
-      includeFields = "search",
-      listingType = "USED",
-      portal = "ZAP",
-      addressState = nome_uf,
-      addressCity = nome,
-      adressLocationId = adress,
-      page = pag,
-      size = "200"
-    )
-    h <- httr::add_headers("X-domain" = "www.zapimoveis.com.br")
-    wd <- httr::write_disk(f, TRUE)
-
-    get_fun <- function() {
-      r <- httr::GET(u, query = query, h, wd)
-
-      if (r$status_code != 200 || file.size(f) < 20000) {
-        stop("trying again")
-      }
-    }
-    get <- purrr::insistently(get_fun, purrr::rate_delay(5, 10))
-    get()
+  endereco <- resultado %>%
+    map(~ pluck(., "listing", "address", "locationId")) %>%
+    nullToNA() %>%
+    unlist()
+  
+  # preços
+  get_price <- function(x) {
+    unlist(price[[x]])['price']
   }
-  message("ok!")
-  f
-}
-
-zap_download_day <- function(dir) {
-  # create folder
-  dir_loc <- paste0(dir, "/", "infraestrutura/dados_imoveis")
-  dir.create(dir_loc, FALSE, TRUE)
-
-  # get first page to check total number of pages
-  j1 <- zap_download_page(1, dir_loc, 1)
-  pages <- jsonlite::read_json(j1)$search$totalCount
-  n_pages <- ceiling(pages / 200)
-
-  # n_pages <- 30
-
-  message("Number of pages to download: ", n_pages)
-
-  # make it download safely
-  safe_download <- purrr::possibly(zap_download_page, "error")
-  purrr::map_chr(seq_len(n_pages), safe_download, dir_loc, n_pages)
-
-  # check if the number of files is the number of pages
-  return(length(list.files(dir_loc)) == n_pages)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-dir
-zap_download_day(dir)
-
-
-
-
-# teste -------------------------------------------------------------------
-
-u <- "https://glue-api.zapimoveis.com.br/v2/listings"
-
-query <- list(
-  business = "SALE",
-  categoryPage = "RESULT",
-  includeFields = "search",
-  listingType = "USED",
-  portal = "ZAP",
-  addressState = "Rio Grande do Sul",
-  addressCity = "Caxias do Sul",
-  adressLocationId = "BR>Rio Grande do Sul>NULL>Caxias do Sul",
-  page = 1,
-  size = "200"
-)
-
-h <- httr::add_headers("X-domain" = "www.zapimoveis.com.br")
-wd <- httr::write_disk(f, TRUE)
-
-r <- httr::GET(u, query = query, h)
-
-c <- httr::content(r)
-
-c$search$totalCount
-
-res <- c %>%
-  flatten() %>%
-  pluck("result") %>%
-  flatten() 
-
-
-#area
-
-pluck(res,1,"listing","usableAreas")
-
-#location
-pluck(res,1,"listing","address","locationId")
-
-#price
-pluck(res,1,"listing","pricingInfos") %>%
-  flatten() %>% pluck("price")
-
-
-# get them all
-areas <- seq_along(res) %>%
-  map(~pluck(res,.,"listing","usableAreas")) %>%
-  unlist()
   
-locations <- seq_along(res) %>%
-  map(~pluck(res,.,"listing","address","locationId")) %>%
-  unlist()
-
-
-pluckandflat <- function(x) {
-  pluck(res,x,"listing","pricingInfos") %>% flatten() %>%
-    pluck("price")
-}
+  price <- resultado %>%
+    map(~ pluck(., "listing", "pricingInfos")) %>%
+    nullToNA()
   
-prices <- seq_along(res) %>%
-  map(pluckandflat) %>%
-  unlist()
+  pricef <- seq_along(price) %>% map(get_price) %>%
+    unlist() %>%
+    as.numeric()
+  
+  # tudo junto
+  imoveis <-
+    tibble(endereco = endereco,
+           price = pricef,
+           area = area)
+  imoveis
+  
+}
 
-df <- tibble(
-  price = prices,
-  areas = areas,
-  locations = locations
-) %>%
-  separate(locations, c("pais","estado","cidade"),">",extra = "merge")
+# importa dados dos municipios --------------------------------------------
 
-
-
-
-
-# get muni straight -------------------------------------------------------
-municode <- read_csv("municode.csv")
 set_billing_id("ice2021")
-diretorios <- read_sql(
-  "SELECT * FROM `basedosdados.br_bd_diretorios_brasil.municipio`")
 
-diretorios <- diretorios %>%
-  select(id_municipio,nome_uf) %>%
-  mutate(id_municipio = as.numeric(id_municipio))
+nome_uf <- read_sql(
+  "SELECT id_municipio, nome_uf
+  FROM `basedosdados.br_bd_diretorios_brasil.municipio`")
 
-municode <- municode %>% left_join(diretorios)
+municode <- read_csv("municode.csv") %>%
+  mutate(id_municipio = as.character(id_municipio)) %>%
+  left_join(nome_uf) %>%
+  select(id_municipio, nome_uf, nome)
+
+# raspa os dados para cada municipio --------------------------------------
+
+terrenos <- map2_dfr(municode$nome_uf, municode$nome, get_muni)
+
+# organiza e exclui dados faltanes
+terrenos_final <- terrenos %>%
+  filter(area !=0 & !is.na(area)) %>%
+  separate(endereco, 
+           sep = ">",
+           into = c("país", "nome_uf", "NULL", "nome", "bairro"),
+           extra = "merge") %>%
+  select(nome_uf,nome, bairro, price, area)
+
+gabarito <- terrenos_final %>%
+  mutate(`m^2` = price/area) %>%
+  arrange(-`m^2`)
 
 
+df <- terrenos_final %>%
+  mutate(m2 = price/area) %>%
+  filter(between(m2,100,20000)) %>%
+  group_by(nome_uf,nome) %>%
+  summarise(price_total = sum(price, na.rm = TRUE),
+            area_total = sum(area),
+            amostra = n(),
+            m2 = price_total/area_total)
 
-queryparams <- municode %>%
-  mutate(nome_sem_acento = rm_accent(nome),
-         nome_uf_sem_acento = rm_accent(nome_uf),
-         adress = paste0("BR>",nome_uf_sem_acento,">","NULL>",nome_sem_acento))
+
+df_final<- municode %>%
+  mutate(across(everything(), rm_accent)) %>%
+  left_join(df) %>%
+  mutate(s22_m2 = 1/m2)
+
+write_excel_csv(df_final,"dados_finais/sd22_m2.xlsx")
 ```
 
 \newpage 
