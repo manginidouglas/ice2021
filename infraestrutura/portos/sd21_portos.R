@@ -1,37 +1,45 @@
+#
+#
+# SD21 - INFRAESTRUTURA - TRANSPORTE INTERURBANO - PORTOS
+
 library(tidyverse)
 library(sf)
-library(leaflet)
 
 # portos ------------------------------------------------------------------
 # unzip(zipfile = "infraestrutura/portos/portos-zip.zip",
 #       exdir = "infraestrutura/portos/portos_shapefile", junkpaths = TRUE,
 #      overwrite = TRUE)
 
-portos <- read_sf("infraestrutura/portos/portos_shapefile/Portos.shp", 
-                  as_tibble = TRUE) 
+portos <-
+  read_sf("infraestrutura/portos/portos_shapefile/Portos.shp",
+          as_tibble = TRUE)
 
 # seleciona portos publicos e os fluviais do amazonas
-portos_am <- c("Itacoatiara","Manaus","Tabatinga","Parintins","Eirunepé")
+portos_am <-
+  c("Itacoatiara", "Manaus", "Tabatinga", "Parintins", "Eirunepé")
 
 am <- portos %>% filter(MUNICIPIO %in% portos_am)
 
-pub <- portos %>% 
-  filter(!str_detect(NOMEPORTO,"TUP"),
-         SITUACAOPO == "Operando",
-         !is.na(MUNICIPIO)) %>%
+pub <- portos %>%
+  filter(!str_detect(NOMEPORTO, "TUP"),
+         SITUACAOPO == "Operando",!is.na(MUNICIPIO)) %>%
   bind_rows(am) %>%
-  select(nome_porto = 3,sigla_uf = 21, nome=20, geometry = 31) %>%
+  select(
+    nome_porto = 3,
+    sigla_uf = 21,
+    nome = 20,
+    geometry = 31
+  ) %>%
   distinct(nome_porto, .keep_all = TRUE)
 
 # municipios --------------------------------------------------------------
-municode <- read_csv("municode.csv") %>% 
-  select(id_municipio, sigla_uf,nome) %>% 
-  filter(nome != "Rio Branco") # shape de rio branco tem problema
+municode <- read_csv("municode.csv") %>%
+  select(id_municipio, sigla_uf, nome)
 
-m <- geobr::read_municipality() %>% 
+m <- geobr::read_municipality(year = 2018) %>%
   select(id_municipio = 1, geom) %>%
   right_join(municode) %>%
-  select(id_municipio,sigla_uf,nome,geom) %>%
+  select(id_municipio, sigla_uf, nome, geom) %>%
   st_as_sf()
 
 # teste -------------------------------------------------------------------
@@ -53,42 +61,39 @@ m <- geobr::read_municipality() %>%
 # funcao distancia portos ao centro do muni
 
 dist <- function(id) {
-set.seed(1)
-  m %>% 
+  set.seed(1)
+  m %>%
     filter(id_municipio == id) %>%
     st_centroid() %>%
     st_distance(pub$geometry, by_element = TRUE)
 }
 
 # distancia de cada muni a cada porto
-munidist <- m$id_municipio %>% 
+munidist <- m$id_municipio %>%
   map(dist) %>%
   set_names(nm = m$id_municipio) %>%
-  as_tibble() 
+  as_tibble()
+
 # transpoe munidist e nomeia as colunas
 # menor distancia em km e seu inverso (o indicador)
 
-munidistt <- cbind(id_municipio = names(munidist), t(munidist)) %>% 
+munidistt <- cbind(id_municipio = names(munidist), t(munidist)) %>%
   as_tibble %>%
-  set_names(c("id_municipio",pub$nome_porto)) %>%
-  mutate(across(-id_municipio, ~round(as.numeric(.)/1000)),
+  set_names(c("id_municipio", pub$nome_porto)) %>%
+  mutate(across(-id_municipio, ~ round(as.numeric(.) / 1000)),
          id_municipio = as.numeric(id_municipio)) %>%
   rowwise(id_municipio) %>%
   mutate(menor_dist = min(c_across(-1)),
-         sd21_portos = 1/menor_dist) %>%
-  select(id_municipio,menor_dist,sd21_portos, everything())
-  
+         sd21_portos = 1 / menor_dist) %>%
+  select(id_municipio, menor_dist, sd21_portos, everything())
 
 
-df <- left_join(municode,munidistt, keep = FALSE) %>%
+df <- left_join(municode, munidistt, keep = FALSE) %>%
   arrange(-sd21_portos)
 
-write_excel_csv(df,"infraestrutura/portos/sd21_portos_completo.xlsx")
+write_excel_csv(df, "infraestrutura/portos/sd21_portos_completo.xlsx")
 
-df2 <- df %>% 
-  select(1:5) %>%
-  add_row(id_municipio = 1200401, sigla_uf = "AC", menor_dist = 500, 
-          sd21_portos = 1/menor_dist)
+df2 <- df %>% select(1,2,3,5) %>% rename(i213 = sd21_portos)
 
-write_excel_csv(df2,"dados_finais/sd21_portos.xlsx")
 
+write_excel_csv(df2, "dados_finais/sd21_portos.xlsx")
