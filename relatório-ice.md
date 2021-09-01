@@ -375,7 +375,7 @@ O tratamento das bases de dados e o cálculo do índice foram feitos usando o R.
 
 ### Indicador Proporção Relativa de Capital de Risco (i412) {#i412}
 
-Este indicador consiste na soma de todos os investimentos de risco, em reais, recebidos por empresas do município no último ano. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+Este indicador consiste na soma de todos os investimentos de risco, em reais, recebidos por empresas do município no último ano dividido pelo PIB do município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
 
 1. Obter valor de capital de risco levantados por empresas dos municípios do ICE
   + Acessar a base de dados [Crunchbase](https://www.crunchbase.com/) para obter os dados. Na área de busca, selecionar aba “Companies” e aplicar seguintes filtros:
@@ -384,6 +384,9 @@ Este indicador consiste na soma de todos os investimentos de risco, em reais, re
   + Buscar municípios manualmente um a um e obter o valor de capital de risco levantado pelas empresas do município no último ano. Foi montada uma tabela no excel com os dados de capital de risco por município;
 2. Obter taxa de câmbio média do último ano de moedas diferente do real presentes na base de dados construída no passo 1 e converter valores para real;
   + Obter dados de taxa de câmbio média no site [OFX](https://www.ofx.com/en-au/forex-news/historical-exchange-rates/yearly-average-rates/) ou outro similar. Transformar todos valores para real.
+3. Obter PIB municipal;
+  + Esse dado foi obtido no indicador [PIB per capita](#sd32). Aqui, usamos o arquivo "pib_mun.csv" que foi obtido exportando o PIB dos municípios usando o script em R do indicador PIB per capita;
+4. Calcular o indicador para cada município de acordo com a seguinte fórmula: $$\text{i412} = \frac{\text{total de invesimentos de risco}}{\text{PIB do município}}$$
 
 O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i412_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
 
@@ -1391,16 +1394,16 @@ dist <-
   mutate(dist = dist %>% str_replace_all(mudar_dist)) %>%
   left_join(tarifa, by = "dist") %>%
   group_by(id_municipio) %>%
-  mutate(tarifa_media = mean(tarifa)) %>%
+  mutate(tarifa_media = mean(tarifa), i223 = 1/tarifa_media) %>%
   distinct(id_municipio, .keep_all = TRUE) %>%
-  arrange(nome)
+  arrange(-i223)
 
-write_excel_csv(dist,
-                "infraestrutura/energia_eletrica/sd22_energia_completa.xlsx")
+write_csv(dist,
+                "infraestrutura/energia_eletrica/sd22_energia_completa.csv")
 
 
-dist %>% select(1, 4, 2, i223 = 6) %>%
-  write_excel_csv("dados_finais/sd22_energia_eletrica.xlsx")
+dist %>% select(1, 4, 2, i223) %>%
+  write_csv("dados_finais/sd22_energia_eletrica.csv")
 #
 #
 # SD21 - INFRAESTRUTURA - TRANSPORTE INTERURBANO - PORTOS
@@ -2006,14 +2009,14 @@ df <- vinculos %>%
   select(id_municipio, sigla_uf, nome, everything()) %>%
   mutate(m_p = media / pequena,
          g_m = grande / media,
-         i322 = m_p / g_m) %>%
+         i322 = g_m / m_p) %>%
   arrange(-i322)
 
-write_excel_csv(df, "mercado/sd32_prop_empresas_completo.xlsx")
+write_csv(df, "mercado/sd32_prop_empresas_completo.csv")
 
 df %>% 
   select(1:3,9) %>% 
-  write_excel_csv("dados_finais/sd32_prop_empresas.xlsx")
+  write_csv("dados_finais/sd32_prop_empresas.csv")
 ```
 
 
@@ -2125,6 +2128,12 @@ top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
 top100_mun_cod <- top100_mun_cod %>% 
   transform(id_municipio = as.character(id_municipio))
 
+# importar tabela pib municipal
+# dado levantado para o indicador pib per capita (i321)
+
+pib_mun <- read.csv('pib_mun.csv', stringsAsFactors =  FALSE)
+pib_mun$id_municipio = as.character(pib_mun$id_municipio)
+
 # ------------------------------------------------------------------
 # PASSO 1: obter capital de risco por municipio no ultimo ano
 # ------------------------------------------------------------------
@@ -2153,15 +2162,16 @@ caprisco_ice <- rbind(caprisco_real, caprisco_dolar, caprisco_euro) %>%
   summarise(valor_total = sum(valor)) %>%
   right_join(top100_mun_cod, by = c('nome', 'sigla_uf')) %>%
   replace_na(list(valor_total = 0)) %>%
-  select(id_municipio, nome, sigla_uf, valor_total)
+  inner_join(pib_mun, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  select(id_municipio, nome, sigla_uf, valor_total, pib)
 
 # ------------------------------------------------------------------
-# PASSO 1: padronizar indicador
+# PASSO 1: calcular e padronizar indicador
 # ------------------------------------------------------------------
 
 i412 <- caprisco_ice %>%
   transform(valor_total = as.numeric(valor_total)) %>%
-  mutate(i412 = valor_total,
+  mutate(i412 = valor_total/pib,
          i412_pad = (i412 - mean(i412))/sdp(i412)) %>%
   select(id_municipio, nome, sigla_uf, i412, i412_pad) %>%
   arrange(desc(i412_pad))
