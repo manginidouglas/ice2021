@@ -38,13 +38,13 @@ dist <-
   mutate(dist = dist %>% str_replace_all(mudar_dist)) %>%
   left_join(tarifa, by = "dist") %>%
   group_by(id_municipio) %>%
-  mutate(tarifa_media = mean(tarifa)) %>%
+  mutate(tarifa_media = mean(tarifa), i223 = 1/tarifa_media) %>%
   distinct(id_municipio, .keep_all = TRUE) %>%
-  arrange(nome)
+  arrange(-i223)
 
-write_excel_csv(dist,
-                "infraestrutura/energia_eletrica/sd22_energia_completa.xlsx")
+write_csv(dist,
+                "infraestrutura/energia_eletrica/sd22_energia_completa.csv")
 
 
-dist %>% select(1, 4, 2, i223 = 6) %>%
-  write_excel_csv("dados_finais/sd22_energia_eletrica.xlsx")
+dist %>% select(1, 4, 2, i223) %>%
+  write_csv("dados_finais/sd22_energia_eletrica.csv")
