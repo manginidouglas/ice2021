@@ -1,11 +1,12 @@
 ---
-title: "Relatório ICE"
-author: "Douglas Mangini"
+title: "Relatório Final ICE 2021"
+author: "Douglas Moreira Mangini e Pedro Henrique Borges da Silva"
 date: "18/08/2021"
 output: 
   pdf_document:
     keep_md: yes
     toc: TRUE
+    number_sections: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -26,35 +27,102 @@ read_files <- function(files) {
 
 # Introdução {#intro}
 
-O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
-Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municípios.    
-
-Abaixo, os nomes que demos aos subdeterminantes para facilitar a comunicação. 
+O presente relatório tem como propósito descrever as tarefas realizadas durante a apuração do Índice de Cidades Empreendedoras 2021 (ICE 2021), que contempla os cem maiores municípios brasileiros. Sete determinantes integram o índice: Ambiente Regulatório; Infraestrutura; Mercado; Acesso a Capital; Inovação; Capital Humano; Cultura. Cada determinante é composto por um grupo de indicadores, por vezes segmentados em diferentes subdeterminantes.
+OS 49 indicadores, seus respectivos subdeterminantes e determinantes estão elencados na tabela a seguir, juntamente com os códigos que são usados para referir-se a eles nos documentos e arquivos do projeto:
 
 ```{r tabela, echo = FALSE, eval = TRUE}
 
 library(magrittr)
 
 tibble::tibble(
-determinante = c(rep("Ambiente Regulatório",3),rep("Infraestrutura",2),rep("Mercado",2)),
+Determinante = c(rep("d1 Ambiente Regulatório",10),
+                 rep('d2 Infraestrutura',7),
+                 rep('d3 Mercado',6),
+                 rep('d4 Acesso a Capital',3),
+                 rep('d5 Inovação',9),
+                 rep('d6 Capital Humano',8),
+                 rep('d7 Cultura',6)),
 
-subdeterminante =  c("Tempo de Processos","Tributação","Complexidade Tributária","Transporte Interurbano","Condições Urbanas","Desenvolvimento Econômico",
-                     "Clientes Potenciais"),
-nomeclatura =  c("sd11","sd12","sd13","sd21","sd22","sd31","sd32")) %>%
-  knitr::kable(caption = "nomeclatura")
+Subdeterminante =  c(rep("sd11 Tempo de Processos",3),
+                     rep('sd12 Tributação',4), 
+                     rep('sd13 Complexidade Burocrática',3),
+                     rep('sd21 Transporte Interurbano',3),
+                     rep('sd22 Condições Urbanas',4),
+                     rep('sd31 Desenvolvimento Econômico',3),
+                     rep('sd32 Clientes Potenciais',3),
+                     rep('sd41 Capital Disponível',3),
+                     rep('sd51 Inputs',5),
+                     rep('sd52 Outputs',4),
+                     rep('sd61 Acesso e Qualidade da Mão de Obra Básica',5),
+                     rep('sd62 Acesso e Qualidade da Mão de Obra Qualificada' ,3),
+                     rep('sd71 Iniciativa',2),
+                     rep('sd72 Instituições',4)),
+Indicador = c('i111 Tempo de Viabilidade de Localização', 
+              'i112 Tempo de Registro, Cadastro e Viabilidade de Nome', 
+              'i113 Taxa de Congestionamento em Tribunais',
+              'i121 Alíquota Interna do ICMS',
+              'i121 Alíquota Interna do IPTU',
+              'i123 Alíquota Interna do ISS',
+              'i124 Qualidade de Gestão Fiscal',
+              'i131 Simplicidade Tributária',
+              'i132 CNDs Municipais',
+              'i133 Atualização de Zoneamento',
+              'i211 Conectividade Via Rodovias',
+              'i212 Número de Decolagens por Ano',
+              'i213 Distância ao Porto mais Próximo',
+              'i221 Acesso à Internet Rápida',
+              'i222 Preço Médio do m²',
+              'i223 Custo da Energia Elétrica',
+              'i224 Taxa de Homicídios',
+              'i311 Índice de Desenvolvimento Humano',
+              'i312 Crescimento Real Médio do PIB',
+              'i313 Número de Empresas Exportadoras com Sede na Cidade',
+              'i321 PIB per capita',
+              'i322 Proporção entre Grandes/Médias e Médias/Pequenas Empresas',
+              'i323 Compras Públicas',
+              'i411 Operações de Crédito por Município',
+              'i412 Proporção Relativa de Capital de Risco',
+              'i413 Capital Poupado per capita',
+              'i511 Proporção de Mestres e Doutores em C&T',
+              'i512 Proporção de Funcionários em C&T',
+              'i513 Média de Investimentos do BNDES e FINEP',
+              'i514 Infraestrutura Tecnológica',
+              'i515 Contratos de Concessão',
+              'i521 Patentes',
+              'i522 Tamanho da Indústria Inovadora',
+              'i523 Tamanho da Economia Criativa',
+              'i524 Tamanho das Empresas TIC',
+              'i611 Nota do Ideb',
+              'i612 Proporção de Adultos com pelo menos o Ensino Médio Completo',
+              'i613 Taxa Líquida de Matrícula no Ensino Médio',
+              'i614 Nota Média no ENEM',
+              'i615 Proporção de Matriculados no Ensino Técnico e Profissionalizante',
+              'i621 Proporção de Adultos com pelo menos os Ensino Superior Completo',
+              'i622 Proporção de Alunos Concluintes em Cursos de Alta Qualidade',
+              'i623 Custo Médio de Salários de Dirigentes',
+              'i711 Pesquisas pelo Termo Empreendedor',
+              'i712 Pesquisas pelo Termo MEI',
+              'i721 Pesquisas por Sebrae',
+              'i722 Pesquisas por Franquia',
+              'i723 Pesquisas por SIMPLES Nacional',
+              'i724 Pesquisas por Senac')) %>%
+  knitr::kable(caption = "Determinantes, subdeterminantes e indicadores com compõem o ICE 2021 com seus respectivos códigos de referência")
 
 ```
 
+O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
+Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municípios.    
 
+Abaixo, os nomes que demos aos subdeterminantes para facilitar a comunicação. 
 
 
 \newpage
 
 
 
-# Ambiente regulatório
+# Determinante Ambiente regulatório {#d1}
 
-## Tempo de processos {#sd11}
+## Subdeterminante Tempo de processos {#sd11}
 
 clique [aqui](#sd11_script) para ver o script
 
@@ -89,7 +157,7 @@ Comentário: Usamos os parâmetros de pesquisa: justiça = Justiça Estadual, ca
 
 
 
-## Tributação {#sd12}
+## Subdeterminante Tributação {#sd12}
 
 clique [aqui](#sd12_script) para ver o script
 
@@ -165,9 +233,9 @@ Comentário: quantidade de anos desde que o município mudou a lei de zoneamento
 \newpage
 
 
-# Infraestrutura
+# Determinante Infraestrutura {#d2}
 
-## Transporte interurbano {#sd21}
+## Subdeterminante Transporte Interurbano {#sd21}
 
 Para os indicadores de rodovias, portos e aeroportos, importamos os dados georeferenciados de cada estrutura e fizemos operações geométricas para encontrar os indicadores. Por exemplo, encontrar as rodovias que passam por um município reduz-se a encontrar o número de interseções entre o polígono do município e a linha que descreve a estrada. Esses cálculos estão no script em apêndice. [ver script](#sd21_script)  
 
@@ -217,7 +285,7 @@ knitr::include_graphics("infraestrutura/portos/ananindeua_ports.png")
 
 
 
-## Condições urbanas {#sd22}
+## Subdeterminante Condições Urbanas {#sd22}
 
 clique [aqui](#sd22_script) para ver o script
 
@@ -259,9 +327,9 @@ Comentário: mortes causadas por agressão, ponderado pelo número estimado de h
 \newpage
  
  
-# Mercados
+# Determinante Mercados {#d3}
 
-## Desenvolvimento econômico {#sd31}
+## Subdeterminante Desenvolvimento Econômico {#sd31}
 clique [aqui](#sd31_script) para ver o script
 
 ### índice de desenvolvimento humano
@@ -290,7 +358,7 @@ Período: 2019
 Comentário: Usamos o pacote `basedosdados` para acessar a RAIS e obter a quantidade de funcionarios por empresa. Dividimos o número de empresas exportadoras pelo total de empresas sediadas no município com pelo menos um funcionário.  
 
 
-## Clientes potenciais {#sd32}
+## Subdeterminante Clientes Potenciais {#sd32}
 clique [aqui](#sd32_script) para ver o script
 
 ### PIB per capita
@@ -312,6 +380,347 @@ Comentário: Razão de duas proporções: empresas grandes por empresas médias 
 \newpage 
 
 
+
+# Determinante Acesso a Capital {#d4}
+## Subdeterminante Capital Disponível {#sd41}
+### Indicador Operações de Crédito por Município (i411) {#i411}
+
+Esse indicador refere-se ao valor, em reais, das operações de crédito no município para pessoas físicas e jurídicas, dos bancos múltiplos com carteira comercial, dividido pelo PIB total do município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:  
+
+1. Obter valor em reais das operações de crédito para pessoas físicas e jurídicas por município;
+  + Acessar site do [Banco Central](http://www4.bcb.gov.br/fis/cosif/estban.asp) e baixar arquivo “Estatística Bancária Mensal por município” referente ao mês de dezembro de 2020 (ano mais recente com dados disponíveis) Na planilha, é utilizada apenas a coluna chamada “VERBETE_160_OPERACOES_DE_CREDITO";
+2. Obter PIB dos municípios do ICE a preços correntes;
+  + Acessar o site do [SIDRA-IBGE](https://sidra.ibge.gov.br/tabela/5938) e baixar a planilha número 5938, escolhendo a opção “Produto Interno Bruto a Preços Correntes” e o nível territorial “município”. Os dados selecionados se referem ao ano mais recente com dados disponíveis, 2018;
+3. Calcular o indicador para cada município de acordo com a seguinte fórmula: $$\text{i411} = \frac{\text{total de operações de crédito}}{\text{PIB}}$$
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i411_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+
+### Indicador Proporção Relativa de Capital de Risco (i412) {#i412}
+
+Este indicador consiste na soma de todos os investimentos de risco, em reais, recebidos por empresas do município no último ano. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+
+1. Obter valor de capital de risco levantados por empresas dos municípios do ICE
+  + Acessar a base de dados [Crunchbase](https://www.crunchbase.com/) para obter os dados. Na área de busca, selecionar aba “Companies” e aplicar seguintes filtros:
+    + Em “Financials” marcar “Past Year” na opção “Last Funding Date”;
+    + Em “Overview”, digitar nome do município na área “Headquarters Location”. Muitos municípios possuem erros nessa base de dados quanto a sua localização. Brasília, por exemplo, está cadastrada como uma cidade do Rio Grande do Norte. Contudo, esses erros não comprometeram o levantamento dos dados;
+  + Buscar municípios manualmente um a um e obter o valor de capital de risco levantado pelas empresas do município no último ano. Foi montada uma tabela no excel com os dados de capital de risco por município;
+2. Obter taxa de câmbio média do último ano de moedas diferente do real presentes na base de dados construída no passo 1 e converter valores para real;
+  + Obter dados de taxa de câmbio média no site [OFX](https://www.ofx.com/en-au/forex-news/historical-exchange-rates/yearly-average-rates/) ou outro similar. Transformar todos valores para real.
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i412_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+
+
+### Indicador Capital Poupado per capita (i413) {#i413}
+
+Esse indicador refere-se ao valor, em reais, das operações de depósitos em poupança e depósitos a prazo feitos no município, de pessoas físicas e jurídicas, dividido pelo número de habitantes estimado do município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:  
+
+1. Obter dados de valor médio mensal de depósitos em poupança e de longo prazo por município;
+  + Acessar site do [Banco Central](https://www.bcb.gov.br/estatisticas/estatisticabancariamunicipios) e baixar arquivo “Estatística Bancária Mensal por município” referente ao mês de dezembro de 2020 (último disponível).Na planilha, utilizar as colunas “VERBETE_420_DEPOSITOS_DE_POUPANCA”  e “VERBETE_432_DEPOSITOS_A_PRAZO”;
+2. Obter estimativa populacional dos municípios do ICE;
+  + Os dados mais recentes são de 2021. Acessar site do [IBGE](https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?=&t=resultados) e baixar tabela;
+3. Calcular indicador  para cada município de acordo com a seguinte fórmula: 
+$$\text{i413} = \frac{\text{valor de depósitos em poupança e a prazo}}{\text{estimativa populacional}}$$ 
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i413_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+\newpage
+# Determinante Inovação {#d5}
+## Subdeterminante Inputs {#sd51}
+
+### Indicador Proporção de Mestres e Doutores em C\&T (i511) {#i511}
+
+Esse indicador refere-se ao número de mestres e doutores titulados nas cidades nas áreas de ciências, tecnologia, engenharias e matemática dividido pelo número total de empresas com pelo menos um funcionário no município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+
+1. Obter para cada município o número de mestres e doutores titulados nas áreas de ciências, tecnologia, engenharias e matemática;
+  + Acessar site da [CAPES](https://dadosabertos.capes.gov.br/) e baixar conjunto de dados “[2017 a 2019] Discentes da Pós-Graduação stricto sensu do Brasil”.
+
+2. Obter para cada município o número total de empresas com pelo menos um funcionário. 
+  + Este dado também é utilizado para o indicador Número de Empresas Exportadoras com Sede na Cidade (i313). O procedimento adotado para obtenção dos dados foi o mesmo. Foram usados os dados mais recentes disponíveis na RAIS, isto é, do ano de 2019;
+  
+3. Calcular o indicador  para cada município do ICE de acordo com a seguinte fórmula: 
+$$\text{i511} = \frac{\text{número de mestres e doutores em C\&T}}{\text{número de empresas com pelo menos um funcionário}}$$
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i511_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+### Indicador Proporção de Funcionários em C\&T (i512) {#i512}
+
+Este indicador refere-se ao número de funcionários do município que trabalham nas áreas de ciência, tecnologia, engenharia, matemática (critério feito pela Classificação Brasileira de Ocupações - CBO) dividido pelo número total de trabalhadores do município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+
+1. Obter para cada município o número de funcionários que trabalham nas áreas de ciência e tecnologia, engenharia, matemática;
+  + Fonte: RAIS, Ministério do Trabalho. As informações encontram-se na tabela de vínculos da RAIS. Os últimos dados disponíveis são do ano de 2019;
+  + Os dados são acessados por meio do *data lake* público [Base dos Dados](https://basedosdados.org/);
+  + As ocupações relacionadas à ciência e tecnologia segundo  a classificação da CBO são as seguintes: 
+    + Subgrupo Principal 73: TRABALHADORES DA FABRICACAO E INSTALACAO ELETROELETRONICA;
+    + Subgrupo Principal 20 “PESQUISADORES E PROFISSIONAIS POLICIENTIFICOS”;
+    + Subgrupo Principal 21:“PROFISSIONAIS DAS CIÊNCIAS EXATAS, FÍSICAS E DA ENGENHARIA”
+    + Subgrupo Principal 31 :“TECNICOS DE NIVEL MEDIO DAS CIENCIAS FISICAS, QUIMICAS, ENGENHARIA E AFINS”;
+    + Subgrupo Principal 30: “TECNICOS POLIVALENTES”:
+    + Subgrupo Principal 39: “OUTROS TECNICOS DE NIVEL MEDIO”; e,
+    + Subgrupo Principal 72: “TRABALHADORES DA TRANSFORMAÇÃO DE METAIS E DE COMPOSITOS”;
+2. Obter número total de trabalhadores no município;
+  + Fonte: RAIS, Ministério do Trabalho. As informações encontram-se na tabela de vínculos da RAIS. Os últimos dados disponíveis são do ano de 2019;
+  + Os dados são acessados por meio do *data lake* público [Base dos Dados](https://basedosdados.org/);
+3. Calcular indicador de acordo com a seguinte fórmula: $$\text{i512} = \frac{\text{número de funcionários de C\&T}}{\text{número total de trabalhadores}}$$
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i512_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+ 
+ 
+ 
+ 
+### Indicador Média de Investimentos do BNDES e da FINEP (i513) {#i513}
+
+Esse indicador refere-se ao número total de investimentos do BNDES e da FINEP dividido pelo total de empresas com pelo menos um funcionário no ano corrente. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+
+1. Obter dados de investimentos do BNDES nos municípios do ICE
+  + Acessar a [central de downloads do site do BNDES](https://www.bndes.gov.br/wps/portal/site/home/transparencia/centraldedownloads) e selecionar "Operações contratadas na forma direta e indireta não automática (2002 a 30.06.2021)”; 
+
+2. Obter dados de investimentos da FINEP nos municípios do ICE;
+  + Acessar site da [FINEP](http://www.finep.gov.br/transparencia-finep/projetos-contratados-e-valores-liberados), na seção “Projetos contratados e valores liberados” e selecionar a planilha “Projetos Contratados”;
+
+3. Obter para cada município o número total de empresas com pelo menos um funcionário; 
+  + Este dado também é utilizado para o indicador Número de Empresas Exportadoras com Sede na Cidade (i313). O procedimento adotado para obtenção dos dados foi o mesmo. Foram usados os dados mais recentes disponíveis na RAIS, isto é, do ano de 2019;
+ 
+4. Calcular o indicador para cada município de acordo com a fórmula: $$\text{i313} = \frac{\text{valores contratados BNDES + valores contratados FINEP}}{\text{nº de empresas com pelo menos um funcionário}}$$ 
+ 
+ O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i513_script) deste relatório. O script e os arquivos de dados com os resultados dos cálculos estão disponíveis no drive do projeto.
+ 
+ 
+ 
+### Indicador Infraestrutura Tecnológica (i514) {#i514}
+
+A variável a medir infraestrutura tecnológica é uma dummy igual a um se o município foi listado no projeto Parques Tecnológicos como possuindo parque, e zero caso contrário. Como o documento usado como fonte para obter esses dados é o mesmo estudo utilizado na edição de 2020 do ICE e a única alteração na lista das 100 cidades mais populosas é a adição de Marabá (PA), o indicador será o mesmo do ano passado, com a adição do dado referente a Marabá. Então, o seguinte procedimento foi adotado para calcular o indicador:
+
+1. Importar tabela com indicador i514 do ICE 2020;
++ Baixar a planilha “Indicador Infraestrutura Tecnológica.xlsx” no [drive do projeto ICE 2020](https://drive.google.com/drive/u/0/folders/1zoR8VDP-yLox28dgplZSDFOfeXtGTrm1)  ;
+2. Acessar o estudo ["Indicadores de Parques Tecnológicos"](https://gestiona.com.br/wp-content/uploads/2019/10/MCTIC-UnB-ParquesTecnologicos-Portugues-final.pdf) que serve de base para o indicador e consultar se existem parques tecnológicos em operação em Marabá. Adicionar linha com a informação sobre o município Marabá na base de dados mencionada acima; 
+  + Para este município a variável é igual a zero;
+
+O tratamento da base de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i514_script) deste relatório. O script e os arquivos de dados com os resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+### Indicador Contratos de Concessão (i515) {#i515}
+
+Esse indicador refere-se ao número total de contratos de Propriedade Intelectual depositados, dividido pelo total de empresas com pelo menos um funcionário, e multiplicado por mil (pois o dado é para cada mil empresas).  
+
+Para este indicador é importante ressaltar que os dados disponíveis de propriedade intelectual depositados a nível municipal não mudaram desde a edição passada do ICE. Os dados disponíveis são referentes aos anos de 2016 e 2017. Portanto, este indicador será o mesmo do ano passado, com a adição do dado referente ao município de Marabá (PA), que entrou no ranking dos municípios mais populosos. Para detalhes de como foi calculado, veja relatório final do ICE 2020. Ainda sim, utilizou-se o R criar um arquivo csv com os dados do indicador de 2020 adicionados ao dado de Marabá (PA). O script encontra-se no [Apêndice](#i515_script) deste relatório. O script e os arquivos de dados com os resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+## Subdeterminante Outputs {#sd52}
+
+### Indicador Patentes (i521) {#i521}
+
+Para a apuração deste indicador, primeiro devem ser somados o total de patentes de inovação, de adição de inovação e de modelos de utilidades nos dois últimos anos disponíveis por município. Então, este total deve ser dividido pelo número de empresas com pelo menos um funcionário em cada um dos 100 municípios. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+
+1. Obter o total de patentes de inovação (PI), de adição de inovação (CA) e de modelos de utilidades (MU) nos últimos dois anos  em cada município;
+  + Baixar os dados no site do [Instituto Nacional da Propriedade Industrial (INPI)](https://www.gov.br/inpi/pt-br/central-de-conteudo/estatisticas), na seção “estatísticas”, e “Indicadores de Propriedade Industrial”;
+  
+2. Obter para cada município o número total de empresas com pelo menos um funcionário. 
+  + Este dado também é utilizado para o indicador Número de Empresas Exportadoras com Sede na Cidade (i313). O procedimento adotado para obtenção dos dados foi o mesmo. Foram usados os dados mais recentes disponíveis na RAIS, isto é, do ano de 2019;
+  
+3. Calcular o indicador  para cada município do ICE de acordo com a seguinte fórmula: $$\text{i521} = \frac{\text{nº de patentes PI ou CA ou MU}}{\text{nº de empresas com pelo menos um funcionário}}$$
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i521_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+
+### Indicador Tamanho da Indústria Inovadora (i522) {#i522}
+
+Esse indicador refere-se à proporção de empresas de indústria inovadora (classes da CNAE 2.0) em relação ao número total de empresas com ao menos um funcionário. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+
+1. Obter número de empresas de indústria inovadora;
+  + Obter, a partir da planilha “Indicador Tamanho da Indústria Inovadora.xlsx” no drive do projeto ICE 2020, a lista de classes associadas a Indústria Inovadora. São 86 classes que estão listadas no [Apêndice](#inovador) deste relatório. Usar a tabela “CNAE20_EstruturaDetalhada.xls” baixada no site do IBGE para associar à cada denominação de classe seu código numérico;
+  + Obter dados de quantidade de empresas de indústria inovadora por meio da tabela de estabelecimentos da RAIS. Selecionar as classes CNAE 2.0 que compõem a indústria inovadora. A RAIS é acessada por meio do *data lake* público [Base dos Dados](https://basedosdados.org/);
+2. Obter para cada município o número total de empresas com pelo menos um funcionário; 
+  + Este dado também é utilizado para o indicador Número de Empresas Exportadoras com Sede na Cidade (i313). O procedimento adotado para obtenção dos dados foi o mesmo. Foram usados os dados mais recentes disponíveis na RAIS, isto é, do ano de 2019;
+3. Calcular indicador de acordo com a seguinte fórmula: $$\text{i522} = \frac{\text{nº de empresas de indústria inovadora}}{\text{nº de empresas com pelo menos um funcionário}}$$
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i522_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Tamanho da Economia Criativa (i523) {#i523}
+
+Este indicador consiste na razão entre empresas de economia criativa selecionadas a partir das classes da CNAE 2.0 no município, e o número total de empresas com ao menos um funcionário no município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:
+
+1. Obter número de empresas de economia criativa nos municípios do ICE
+  + Obter, a partir da planilha “Indicador Tamanho da Economia Criativa.xlsx” no drive do projeto ICE 2020, a lista de classes associadas a Economia Criativa. São 37 classes que estão listadas no Apêndice deste relatório. 
+  + Usar a tabela “CNAE20_EstruturaDetalhada.xls” baixada no site do IBGE para associar à cada denominação de classe seu código numérico. 
+  + Obter dados de quantidade de empresas de economia criativa por meio da tabela de estabelecimentos da RAIS. Selecionar as classes CNAE 2.0 que compõem a indústria inovadora. A RAIS é acessada por meio do *data lake* público [Base dos Dados](https://basedosdados.org/);
+2. Obter para cada município o número total de empresas com pelo menos um funcionário; 
+  + Este dado também é utilizado para o indicador Número de Empresas Exportadoras com Sede na Cidade (i313). O procedimento adotado para obtenção dos dados foi o mesmo. Foram usados os dados mais recentes disponíveis na RAIS, isto é, do ano de 2019;
+3. Calcular indicador para cada município de acordo com a seguinte fórmula: $$\frac{\text{nº de empresas de economia criativa}}{\text{nº de empresas com pelo menos um funcionário}}$$
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i523_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+### Indicador Tamanho das Empresas TIC (i524) {#i524}
+Esse indicador refere-se à razão entre o número empresas dos setores de tecnologia da informação e comunicação (TIC) no município, selecionadas a partir das classes da CNAE 2.0, e o número total de empresas com ao menos um funcionário no município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:  
+
+1. Obter número de empresas TIC nos municípios de interesse;
+  + Obter, a partir da planilha “Indicador Tamanho das Empresas TIC.xlsx” no drive do projeto ICE 2020, a lista de classes associadas a Economia Criativa. São 24 classes que estão listadas no Apêndice deste relatório; 
+  + Usar a tabela “CNAE20_EstruturaDetalhada.xls” baixada no site do IBGE para associar à cada denominação de classe seu código numérico; 
+  + Obter dados de quantidade de empresas TIC por meio da tabela de estabelecimentos da RAIS. Selecionar as classes CNAE 2.0 que caracterizam empresas TIC. A RAIS é acessada por meio do data lake público Base dos Dados;
+2. Obter para cada município o número total de empresas com pelo menos um funcionário; 
+  + Este dado também é utilizado para o indicador Número de Empresas Exportadoras com Sede na Cidade (i313). O procedimento adotado para obtenção dos dados foi o mesmo. Foram usados os dados mais recentes disponíveis na RAIS, isto é, do ano de 2019;
+3. Calcular indicador para cada município de acordo com a seguinte fórmula: $$\text{i524} = \frac{\text{nº de empresas TIC}}{\text{nº de empresas com pelo menos um funcionário}}$$
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i524_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+\newpage
+# Determinante Capital Humano {#d6}
+## Subdeterminante Acesso e Qualidade da Mão de Obra Básica {#sd61}
+
+### Indicador Nota do Ideb (i611) {#i611}
+
+Esse indicador trata-se do Índice final do IDEB de cada município, que é calculado com base no desempenho escolar dos alunos dos anos finais do ensino fundamental nas escolas públicas dos municípios. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:  
+
+1. Obter índice final Ideb de cada município do ICE;  
+  + Os dados são fornecidos pelo INEP no site do [IDEB](http://ideb.inep.gov.br/). Seleciona-se “Município”, então, em Rede/Dependência Administrativa, é selecionada a opção “Pública (Federal, Estadual e Municipal). Em série, seleciona-se “8ª série / 9º ano”. A consulta é feita por cidade, selecionando-a nos campos UF e município;
+  + Os dados mais recentes, de 2019, foram, então, reunidos na planilha “i611 base de dados.xlxs”, disponível no drive de arquivos do projeto. 
+  
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i611_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Proporção de adultos com pelo menos o Ensino Médio completo (i612) {#i612}
+
+Este indicador é a média simples de dois dados: 
+
+1. A razão entre o número de inscritos no ENEM no município que declararam ter pai com pelo menos ensino médio completo e total de inscritos no município;
+2. A razão entre o número de inscritos no ENEM no município que declararam ter mãe com pelo menos ensino médio completo e total de inscritos no município.  
+
+A base de dados deste indicador são os microdados do ENEM fornecidos pelo [INEP](http://portal.inep.gov.br/microdados). No website, selecionou-se a base de dados mais recente, referente à edição de 2019. Essa base de dados contém os dados para este indicador e também para os indicadores Nota Média no Enem (i614) e Proporção de Adultos com pelo menos o Ensino Superior Completo (i621). 
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i612_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Taxa Líquida de Matrícula no Ensino Médio (i613) {#i613}
+
+Este indicador refere-se ao número de alunos entre 15 e 17 anos matriculados no ensino médio dividido pela população estimada de jovens com idade entre 15 e 17 anos.
+Então, a estimativa da população entre 15 e 17 anos é calculada com base nos dados do censo de 2010, aumentada pelo percentual de crescimento da população total daquele município até o ano em vigor. Por exemplo, se a população total de São Paulo cresceu 10% entre 2010 e 2021, a população de jovens entre 15 e 17 anos de 2010 é acrescida em 10%. Os passos tomados para chegar ao índice estão descritos a seguir:
+
+1. Obter número de alunos entre 15 e 17 anos matriculados no EM em cada município;
+  + Os dados de alunos matriculados estão disponíveis na base de microdados do censo escolar do INEP;
+2. Obter população entre 15 e 17 anos no município;
+  + Dados disponíveis no Censo 2010, obtidos no site do IBGE, baixando os dados do censo por município e idade;
+3. Obter população total do município em 2010;
+  + Dados disponíveis no Censo 2010. Contudo, os dados foram obtidos por meio do *data lake* público Base dos Dados;
+4. Obter estimativa populacional do município em 2021;
+  + Dados obtidos no site do IBGE;
+5. Calcular  fator de crescimento populacional do município entre 2010 e 2021 a partir dos dados obtidos;
+6. Calcular população estimada do município em 2020 de pessoas entre 15 e 17;
+7. Calcular indicador para cada município por meio da seguinte fórmula: $$\text{i613} = \frac{\text{matriculados no Ensino Médio de 15 e 17 anos em 2020}}{\text{estimativa populacional de pessoas entre 15 a 17 em 2020}}$$
+
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i613_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Nota média no ENEM (i614) {#i614}
+
+Esse indicador consiste na nota média no Exame Nacional do Ensino Médio (ENEM) em todas as provas dos inscritos no município. Os passos tomados para chegar ao indicador estão descritos a seguir:
+
+1. Obter microdados do ENEM para os 100 municípios mais populosos do Brasil;
+  + Acessar site do [INEP](http://portal.inep.gov.br/microdados) selecionar a base de dados mais recente, referente à edição de 2019. Essa base de dados contém os dados para este indicador e também para os indicadores Nota Média no Enem (i614) e Proporção de Adultos com pelo menos o Ensino Superior Completo (i621).
+2. Calcular a nota média de cada aluno considerando as 5 provas do ENEM;
+3. Calcular a nota média de cada município, considerando as notas médias de todos os inscritos do município. 
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i614_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Proporção de Matriculados no Ensino Técnico e Profissionalizante (i615) {#i615}
+
+Esse indicador refere-se ao número total de alunos inscritos no ensino técnico, dividido pela população estimada com mais de 15 anos. Então, a estimativa da população acima de 15 anos é calculada com base nos dados do censo de 2010, aumentada pelo percentual de crescimento da população total daquele município até o ano em vigor. Por exemplo, se a população total de São Paulo cresceu 10% entre 2010 e 2021, a população acima de 15 anos de 2010 é acrescida em 10%. Os passos tomados para chegar ao índice estão descritos a seguir:
+
+1. Obter número de alunos matriculados no ensino técnico em cada município;
+  + Os dados de alunos matriculados estão disponíveis na base de microdados do censo escolar do INEP;
+2. Obter população acima de 15 anos no município;
+  + Dados disponíveis no Censo 2010, obtidos no site do IBGE, baixando os dados do censo por município e idade;
+3. Obter população total do município em 2010;
+  + Dados disponíveis no Censo 2010. Contudo, os dados foram obtidos por meio do *data lake* público Base dos Dados;
+4. Obter estimativa populacional do município em 2021;
+  + Dados obtidos no site do IBGE;
+5. Calcular  fator de crescimento populacional do município entre 2010 e 2021 a partir dos dados obtidos;
+6. Calcular população estimada do município em 2021 de pessoas com mais de 15 anos;
+7. Calcular indicador para cada município por meio da seguinte fórmula: $$\text{i615} = \frac{\text{matriculados no ensino técnico e profissionalizante}}{\text{estimativa populacional de pessoas com mais de 15 anos}}$$
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i615_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+## Subdeterminante Acesso e Qualidade da Mão de Obra Qualificada {#sd62}
+### Indicador Proporção de Adultos com pelo Menos Ensino Superior Completo (i621) {#i621}
+
+Este indicador é a média simples de dois dados: 
+
+1. A razão entre o número de inscritos no ENEM no município que declararam ter pai com pelo menos ensino superior completo e total de inscritos no município;
+2. A razão entre o número de inscritos no ENEM no município que declararam ter mãe com pelo menos ensino superior completo e total de inscritos no município.  
+
+A base de dados deste indicador são os microdados do ENEM fornecidos pelo [INEP](http://portal.inep.gov.br/microdados). No website, selecionou-se a base de dados mais recente, referente à edição de 2019. Essa base de dados contém os dados para este indicador e também para os indicadores Nota Média no Enem (i614) e Proporção de Adultos com pelo menos o Ensino Superior Completo (i621). 
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i621_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+### Indicador Proporção de Alunos Concluintes em Cursos de Alta Qualidade (i622) {#i622}
+
+Esse indicador refere-se ao total de alunos concluintes em cursos de alta qualidade, que são reconhecidos com as notas 4 e 5 no ENADE, nos últimos três anos, dividido pelo total de alunos concluintes em cursos de graduação avaliados pelo ENADE. São coletadas as informações de três anos de ENADE, o que faz com que o indicador abranja todos os cursos da cidade. Para este indicador, foram obtidos os dados do Enade dos anos de 2017, 2018 e 2019 (os mais recentes até o momento da construção do indicador). Estes dados são fornecidos no site do [INEP](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/indicadores-educacionais/indicadores-de-qualidade-da-educacao-superior).Para calcular o índice, foi seguido o seguinte passo a passo:
+1. Obter, para os cem municípios mais populosos, o número de concluintes em todos os cursos avaliados pelo ENADE;
+1. Obter, para os cem municípios mais populosos, o número de concluintes em cursos com notas 4 e 5 no ENADE;
+1. Calcular indicador por meio da seguinte fórmula: $$ \text{i622} = \frac{\text{total de alunos concluintes em cursos com notas 4 e 5 no ENADE}}{\text{total de alunos concluintes em cursos avaliados pelo ENADE}}$$
+
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i622_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Custo Médio de Salários de Dirigentes (i623) {#i623}
+
+Esse indicador refere-se ao salário médio de funcionários em cargos de gerências e direção segundo classificação própria a partir da Classificação Brasileira de Ocupações (CBO). O cálculo do indicador consiste em dividir o salário dos funcionários atuantes nesses cargos pelo total de trabalhadores nos mesmos cargos.
+Os cargos utilizados nesse indicador segundo classificação da CBO são: 1) diretores e gerentes em empresa de serviços de saúde, da educação, ou de serviços cul, 2) dirigentes de empresas e organizações (exceto de interesse público), e 3) gerentes.
+Esse dado é coletado pela RAIS na seção de vínculos. Assim como os outros, deve-se selecionar os municípios do ICE e as ocupações da CBO 2002 na seção de “Princ Subgrupos” e selecionar “Vl Remuneração Média Nom”. 
+Os cargos utilizados neste indicador e seus respectivos subgrupos principais segundo a CBO são: dirigentes de empresas e organizações (exceto de interesse público) (12), diretores e gerentes em empresa de serviços de saúde, da educação, ou de serviços culturais, sociais ou pessoais (13); e  gerentes (14). Os passos tomados para chegar ao indicador estão descritos a seguir:  
+
+1. Obter total de trabalhadores em cargos de gerência e direção;
+  + Fonte: RAIS (Relação Anual de Informações Sociais). Ministério da Economia
+  + Para selecionar os devidos cargos no banco de dados da RAIS, foi consultado o arquivo “Estrutura CBO” disponível na [internet](http://www.mtecbo.gov.br/cbosite/pages/downloads.jsf);
+  + A RAIS  foi acessado por meio do data lake público Base dos Dados;
+2. Obter a soma dos salarios de todos dirigentes (cargos de interesse) em cada município.
+  + A fonte desses dados também é a RAIS (vínculo); 
+3. Calcular o indicador i623 de acordo com a seguinte fórmula: $$ \text{i623} = \frac{\text{soma dos salários de dirigentes}}{\text{nº de dirigentes}}$$
+
+O tratamento dos dados e cálculo do índice foram feitos no R. O script encontra-se no [Apêndice](#i623_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+
+
+\newpage
+# Determinante Cultura {#d7}
+## Subdeterminante Iniciativa
+### Indicador Pesquisas com o Termo “Empreendedor” (i711) {#i711}
+
+Este indicador reflete a quantidade de  buscas na internet pela palavra-chave “empreendedor” no município, reportado pelo Google Trends. Os seguintes passos foram tomados para se obter o indicador:
+
+1. Obter informações a partir do site Google Trends; 
+  + No site, pesquisar pela palavra-chave, selecionar “Brazil”, “2020”, “All Categories”, “Web Search”; 
+  + Selecionar o nível territorial “City” e fazer o download da planilha com o resultado da pesquisa.
+  
+O tratamento dos dados e cálculo do indicador foram feitos no R. Como o procedimento é o mesmo para todos os indicadores do determinante 7, todos eles são calculados no mesmo script, que encontra-se no [Apêndice](#d7_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Pesquisas com o Termo “MEI” (i712) {#i712}
+
+Ver [Indicador Pesquisas com Termo "Empreendedor"](#i711), que apresenta o procedimento para se chegar aos indicadores do determinante Cultura. O script para os indicadores do determinante Cultura estão no [Apêndice](#d7_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+## Subdeterminante Instituições
+### Indicador Pesquisas com o Termo “Sebrae” (i721) {#i721}
+
+Ver [Indicador Pesquisas com Termo "Empreendedor"](#i711), que apresenta o procedimento para se chegar aos indicadores do determinante Cultura. O script para os indicadores do determinante Cultura estão no [Apêndice](#d7_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Pesquisas com o Termo “Franquia” (i722) {#i722}
+
+Ver [Indicador Pesquisas com Termo "Empreendedor"](#i711), que apresenta o procedimento para se chegar aos indicadores do determinante Cultura. O script para os indicadores do determinante Cultura estão no [Apêndice](#d7_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Pesquisas com o Termo “SIMPLES Nacional” (i723) {#i723}
+
+Ver [Indicador Pesquisas com Termo "Empreendedor"](#i711), que apresenta o procedimento para se chegar aos indicadores do determinante Cultura. O script para os indicadores do determinante Cultura estão no [Apêndice](#d7_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+### Indicador Pesquisas com o Termo “Senac” (i724) {#i724}
+
+Ver [Indicador Pesquisas com Termo "Empreendedor"](#i711), que apresenta o procedimento para se chegar aos indicadores do determinante Cultura. O script para os indicadores do determinante Cultura estão no [Apêndice](#d7_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
+
+
+
+\newpage
 
 # Apêndice {-}
 
