@@ -51,7 +51,9 @@ df <- df_pedro %>%
 indicadores <- names(df) %>% sort() %>% str_subset("^i\\d{3}$")
 
 df_final <- df %>%
-  select(id_municipio, sigla_uf, nome, all_of(indicadores))
+  select(id_municipio, sigla_uf, nome, all_of(indicadores)) %>%
+  mutate(across(matches("^i\\d{3}$"), as.numeric))
+
 
 df_final_indicadores <- df_final %>% 
   select(matches("^i\\d{3}$")) %>%
