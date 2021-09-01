@@ -17,7 +17,7 @@ output:
 
 # Introdução {#intro}
 
-O presente relatório tem como propósito descrever as tarefas realizadas durante a apuração do Índice de Cidades Empreendedoras 2021 (ICE 2021), que contempla os cem maiores municípios brasileiros. Sete determinantes integram o índice: Ambiente Regulatório; Infraestrutura; Mercado; Acesso a Capital; Inovação; Capital Humano; Cultura. Cada determinante é composto por um grupo de indicadores, por vezes segmentados em diferentes subdeterminantes.
+Este relatório descreve as tarefas realizadas durante a apuração do Índice de Cidades Empreendedoras 2021 (ICE 2021), que contempla os maiores municípios brasileiros. Sete determinantes integram o índice: Ambiente Regulatório; Infraestrutura; Mercado; Acesso a Capital; Inovação; Capital Humano; Cultura. Cada determinante é composto por um grupo de indicadores, segmentados em diferentes subdeterminantes.
 OS 49 indicadores, seus respectivos subdeterminantes e determinantes estão elencados na tabela a seguir, juntamente com os códigos que são usados para referir-se a eles nos documentos e arquivos do projeto:
 
 
@@ -77,8 +77,6 @@ Table: Determinantes, subdeterminantes e indicadores com compõem o ICE 2021 com
 
 O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
 Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municípios.    
-
-Abaixo, os nomes que demos aos subdeterminantes para facilitar a comunicação. 
 
 
 \newpage
@@ -1391,16 +1389,16 @@ dist <-
   mutate(dist = dist %>% str_replace_all(mudar_dist)) %>%
   left_join(tarifa, by = "dist") %>%
   group_by(id_municipio) %>%
-  mutate(tarifa_media = mean(tarifa)) %>%
+  mutate(tarifa_media = mean(tarifa), i223 = 1/tarifa_media) %>%
   distinct(id_municipio, .keep_all = TRUE) %>%
-  arrange(nome)
+  arrange(-i223)
 
-write_excel_csv(dist,
-                "infraestrutura/energia_eletrica/sd22_energia_completa.xlsx")
+write_csv(dist,
+                "infraestrutura/energia_eletrica/sd22_energia_completa.csv")
 
 
-dist %>% select(1, 4, 2, i223 = 6) %>%
-  write_excel_csv("dados_finais/sd22_energia_eletrica.xlsx")
+dist %>% select(1, 4, 2, i223) %>%
+  write_csv("dados_finais/sd22_energia_eletrica.csv")
 #
 #
 # SD21 - INFRAESTRUTURA - TRANSPORTE INTERURBANO - PORTOS
@@ -2006,14 +2004,14 @@ df <- vinculos %>%
   select(id_municipio, sigla_uf, nome, everything()) %>%
   mutate(m_p = media / pequena,
          g_m = grande / media,
-         i322 = m_p / g_m) %>%
+         i322 = g_m / m_p) %>%
   arrange(-i322)
 
-write_excel_csv(df, "mercado/sd32_prop_empresas_completo.xlsx")
+write_csv(df, "mercado/sd32_prop_empresas_completo.csv")
 
 df %>% 
   select(1:3,9) %>% 
-  write_excel_csv("dados_finais/sd32_prop_empresas.xlsx")
+  write_csv("dados_finais/sd32_prop_empresas.csv")
 ```
 
 
