@@ -381,8 +381,19 @@ Comentário: Razão de duas proporções: empresas grandes por empresas médias 
 
 
 
-### Indicador Compras Públicas (i323)
+### Indicador Compras Públicas (i323) {#i323}
 
+Este indicador refere-se ao total de despesas e investimentos feitos pela prefeitura dividido pelo número de empresas com pelo menos um funcionário no município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:  
+
+1. Obter valor total de despesas e investimentos feitos pela prefeitura dos municípios do ICE
+  + Acessar site do [Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (Siconfi) e acessar “contas anuais” na seção “consultar finbra” em “consultas”;
+  + Selecionar como “”exercício” o ano de 2020, ano mais recente disponível, como “escopo” selecionar Município, e selecionar a tabela “Despesas Orçamentárias (Anexo I-D)”;
+  + Observações: na data em de acesso à tabela (26/08/2021), ainda faltavam dados de Belém (PA). Foi escolhido manter os dados de 2020 uma vez que o documento “Produto 3v3” sugere selecionar o ano anterior somente quando os dados faltantes do ano mais recente forem “muitos”.
+  + Os dados de Brasília foram coletados à parte utilizando como escopo “Estados/DF” na seleção de tabela no site da Siconfi, já que, para os dados de despesas orçamentárias, Brasília é tratada como um estado e não um município;
+2. Obter para cada município o número total de empresas com pelo menos um funcionário. 
+  + Esse dado também é utilizado para o indicador Número de Empresas Exportadoras com Sede na Cidade (i313). O procedimento adotado para obtenção dos dados foi o mesmo .Foram usados os dados mais recentes disponíveis na RAIS, isto é, do ano de 2019
+3. Calcular o indicador para cada município de acordo com a seguinte fórmula: $$\text{i323} = \frac{\text{despesas +investimentos}}{\text{quantidade de empresas com pelo menos um funcionário}}$$
+O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i323_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
 
 
 # Determinante Acesso a Capital {#d4}
@@ -737,7 +748,7 @@ voltar para [introdução](#intro)
 
 \newpage 
 
-### sd11 {#sd11_script}
+### Script sd11 {#sd11_script}
 
 voltar para [Tempo de Processos](#sd11)
 
@@ -746,7 +757,7 @@ voltar para [Tempo de Processos](#sd11)
 
 \newpage 
 
-### sd12 {#sd12_script}
+### Script sd12 {#sd12_script}
 
 voltar para [Tributação](#sd12)
 
@@ -755,7 +766,7 @@ voltar para [Tributação](#sd12)
 
 \newpage 
 
-### sd13 {#sd13_script}
+### Script sd13 {#sd13_script}
 
 voltar para [Complexidade Tributária](#sd13)
 
@@ -764,7 +775,7 @@ voltar para [Complexidade Tributária](#sd13)
 
 \newpage 
 
-### sd21 {#sd21_script}
+### Script sd21 {#sd21_script}
 
 voltar para [Transporte Interurbano](#sd21)
 
@@ -775,7 +786,7 @@ voltar para [Transporte Interurbano](#sd21)
 
 \newpage 
 
-### sd22 {#sd22_script}
+### Script sd22 {#sd22_script}
 
 voltar para [Condições Urbanas](#sd22)
 
@@ -785,7 +796,7 @@ voltar para [Condições Urbanas](#sd22)
 
 \newpage 
 
-### sd31 {#sd31_script}
+### Script sd31 {#sd31_script}
 
 voltar para [Desenvolvimento Econômico](#sd31)
 
@@ -794,11 +805,2115 @@ voltar para [Desenvolvimento Econômico](#sd31)
 
 \newpage 
 
-### sd32 {#sd32_script}
+### Script sd32 {#sd32_script}
 
 voltar para [Clientes Potenciais](#sd32)
 
 ```{r sd32, code = read_files('mercado/sd32.R')}
 ```
 
+
+
+
+## Script i411 {#i411_script} 
+Este scrip em R refere-se ao [Indicador Operações de Crédito por Município (i411)](#i411)
+```{r i411, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Operacoes de Credito por Municipio (i411)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# obter codigos de municipio do banco central
+query <- "SELECT * FROM `basedosdados.br_bd_diretorios_brasil.municipio`"
+cod_mun <- read_sql(query) %>% select(id_municipio, id_municipio_bcb)
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio)) %>%
+  inner_join(cod_mun, by = "id_municipio")
+
+# ------------------------------------------------------------------
+# PASSO 1: obter valor em reais das operacoes de credito
+# ------------------------------------------------------------------
+
+# importar tabela com dados de operacoes de credito (dez. 2020) 
+op_cred <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                     d4 Acesso a Capital/sd41/
+                     i411/202012_ESTBAN.csv', skip =2) %>%
+  as_tibble() %>%
+  transform(CODMUN = as.character(CODMUN)) %>%
+  replace_na(list(VERBETE_160_OPERACOES_DE_CREDITO = 0)) %>%
+  select(id_municipio_bcb = CODMUN,
+         op_cred = VERBETE_160_OPERACOES_DE_CREDITO)
+
+op_cred_ice <- op_cred %>%  
+  inner_join(top100_mun_cod, by = 'id_municipio_bcb') %>%
+  group_by(id_municipio, nome, sigla_uf) %>%
+  summarise(valor_total = sum(op_cred))
+  
+# ------------------------------------------------------------------
+# PASSO 2: obter PIB dos municipios
+# ------------------------------------------------------------------
+
+# importar tabela com PIB a nivel de municipios
+# os nomes das colunas foram previamente alterados no excel
+pib <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                 d4 Acesso a Capital/sd41/i411/tabela5938.csv', skip = 3)
+
+pib_ice <- pib %>% 
+  inner_join(top100_mun_cod, by = 'id_municipio') %>%
+  mutate(pib = pib_milreais * 1000) %>%
+  select(id_municipio, nome = nome.y, sigla_uf, pib)
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+i411 <- pib_ice %>% 
+  inner_join(op_cred_ice, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i411 = valor_total/pib,
+         i411_pad = (i411 - mean(i411))/sdp(i411)) %>%
+  select(id_municipio, nome, sigla_uf, i411, i411_pad) %>%
+  arrange(desc(i411_pad))
+
+# exportar indicador 
+write.csv(i411, "i411.csv", row.names = FALSE)
+```
+
+
+
+
+## Script i412 {#i412_script}
+Este scrip em R refere-se ao [Indicador Proporção Relativa de Capital de Risco (i412)](#i412)
+```{r i412, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+
+# Indicador Proporcao Relativa de Capital de Risco (i412)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter capital de risco por municipio no ultimo ano
+# ------------------------------------------------------------------
+
+# importar tabela construida manualmente a partir do site crunchbase
+# taxa media de cambio do ultimo ano: 5.360819 para dolar e 6.408495 para euro
+caprisco <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                       d4 Acesso a Capital/sd41/i412/caprisco.xlsx', sheet = 2)
+
+caprisco_dolar <- caprisco %>% 
+  filter(dolar ==1) %>%
+  mutate(valor = valor*5.360819) %>%
+  select(nome, sigla_uf, empresa, valor)
+
+caprisco_real <- caprisco %>% 
+  filter(real ==1) %>%
+  select(nome, sigla_uf, empresa, valor)
+
+caprisco_euro <- caprisco %>% 
+  filter(euro ==1) %>%
+  mutate(valor = valor*6.408495) %>%
+  select(nome, sigla_uf, empresa, valor)
+
+caprisco_ice <- rbind(caprisco_real, caprisco_dolar, caprisco_euro) %>%
+  group_by(nome, sigla_uf) %>%
+  summarise(valor_total = sum(valor)) %>%
+  right_join(top100_mun_cod, by = c('nome', 'sigla_uf')) %>%
+  replace_na(list(valor_total = 0)) %>%
+  select(id_municipio, nome, sigla_uf, valor_total)
+
+# ------------------------------------------------------------------
+# PASSO 1: padronizar indicador
+# ------------------------------------------------------------------
+
+i412 <- caprisco_ice %>%
+  transform(valor_total = as.numeric(valor_total)) %>%
+  mutate(i412 = valor_total,
+         i412_pad = (i412 - mean(i412))/sdp(i412)) %>%
+  select(id_municipio, nome, sigla_uf, i412, i412_pad) %>%
+  arrange(desc(i412_pad))
+
+# exportar indicador
+write.csv(i412, "i412.csv", row.names = FALSE)
+```
+
+
+## Script i413 {#i413_script}
+Este scrip em R refere-se ao [Indicador Capital Poupado per capita (i413)](#i413)
+```{r i413, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador  Indicador Capital Poupado per capita (i413)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# obter codigos de municipio do banco central
+query <- "SELECT * FROM `basedosdados.br_bd_diretorios_brasil.municipio`"
+cod_mun <- read_sql(query) %>% select(id_municipio, id_municipio_bcb)
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio)) %>%
+  inner_join(cod_mun, by = "id_municipio")
+
+# ------------------------------------------------------------------
+# PASSO 1: obter valor de depositos em poupanca e a prazo
+# ------------------------------------------------------------------
+
+# importar tabela com dados de operacoes de credito (dez. 2020)
+# notar que a tabela e a mesma utilizada em i411
+op_dep <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                    d4 Acesso a Capital/sd41/i411/
+                    202012_ESTBAN.csv', skip =2) %>%
+  as_tibble() %>%
+  transform(CODMUN = as.character(CODMUN)) %>%
+  replace_na(list(VERBETE_420_DEPOSITOS_DE_POUPANCA = 0,
+                  VERBETE_432_DEPOSITOS_A_PRAZO = 0)) %>%
+  select(id_municipio_bcb = CODMUN,
+         poup = VERBETE_420_DEPOSITOS_DE_POUPANCA,
+         prazo = VERBETE_432_DEPOSITOS_A_PRAZO)
+
+op_dep_ice <- op_dep %>%  
+  inner_join(top100_mun_cod, by = 'id_municipio_bcb') %>%
+  group_by(id_municipio, nome, sigla_uf) %>%
+  summarise(soma_poup = sum(poup),
+            soma_prazo = sum(prazo)) %>%
+  mutate(poup_prazo = soma_poup + soma_prazo) %>%
+  select(id_municipio, nome, sigla_uf, poup_prazo)
+
+# ------------------------------------------------------------------
+# PASSO 2: obter populacao estimada dos municipios
+# ------------------------------------------------------------------
+
+# obter estimativa populacionao de 2020
+pop_ice <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                      estimativa_dou_2021.xls', sheet = 2, skip = 1) %>%
+  na.omit() %>%
+  select(nome = 'NOME DO MUNIC?PIO',
+         sigla_uf = 'UF',
+         populacao = 'POPULA??O ESTIMADA') %>%
+  inner_join(top100_mun_cod, by = c('nome', 'sigla_uf')) %>%
+  select(id_municipio, nome, sigla_uf, populacao)
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+i413 <- pop_ice %>% 
+  inner_join(op_dep_ice, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i413 = poup_prazo/populacao,
+         i413_pad = (i413 - mean(i413))/sdp(i413)) %>%
+  select(id_municipio, nome, sigla_uf, i413, i413_pad) %>%
+  arrange(desc(i413_pad))
+
+# exportar indicador 
+write.csv(i413, "i413.csv", row.names = FALSE)
+```
+
+
+## Script i511 {#i511_script}
+Este script em R refere-se ao [Indicador Proporção de Mestres e Doutores em C\&T (i511)](#i511)
+```{r i511, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Proporcao de Mestres e Doutores em C&T (i511)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# criar variavel com municipios ICE em letra maiuscula 
+# (dados da CAPES tem municipios com letra maiuscula)
+top100_mun_cod$NOME = toupper(top100_mun_cod$nome)
+
+# ------------------------------------------------------------------
+# PASSO 1: obter dados sobre discentes
+# ------------------------------------------------------------------
+
+# obter dados sobre discentes da CAPES para o ano de referencia 2019
+discentes <- read.csv2("C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                       sd51 Inputs/i511/
+                       br-capes-colsucup-discentes-2019-2021-03-01.csv", 
+                       row.names=NULL)
+
+# definir vetor com areas de avaliacao de interesse
+alvo <- c('ASTRONOMIA / FÍSICA',
+          'BIOTECNOLOGIA',
+          'CIÊNCIA DA COMPUTAÇÃO', 
+          'CIÊNCIA DE ALIMENTOS', 
+          'CIÊNCIAS AGRÁRIAS I', 'CIÊNCIAS AMBIENTAIS', 
+          'CIÊNCIAS BIOLÓGICAS I', 
+          'CIÊNCIAS BIOLÓGICAS II', 
+          'CIÊNCIAS BIOLÓGICAS III', 
+          'ENGENHARIAS I', 
+          'ENGENHARIAS II', 
+          'ENGENHARIAS III', 
+          'ENGENHARIAS IV', 
+          'FARMÁCIA', 
+          'GEOCIÊNCIAS', 
+          'MATEMÁTICA / PROBABILIDADE E ESTATÍSTICA', 
+          'MATERIAIS', 'QUÍMICA')
+
+# filtrar para obter apenas as situacoes "titulado" 
+# e as areas de interesse e municipios de interesse
+disc_titulados <- discentes %>% filter(NM_SITUACAO_DISCENTE == "TITULADO",
+                                       NM_AREA_AVALIACAO %in% alvo) %>%
+                  rename(sigla_uf = SG_UF_PROGRAMA,
+                         NOME = NM_MUNICIPIO_PROGRAMA_IES) %>%
+                  inner_join(top100_mun_cod, by = c("sigla_uf", "NOME")) %>%
+                  count(sigla_uf, nome, name = "disc_titulados") %>%
+                  right_join(top100_mun_cod, by = c("sigla_uf","nome")) %>%
+                  select(id_municipio, nome, sigla_uf, disc_titulados) %>%
+                  replace_na(list(disc_titulados = 0))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter dados sobre empresas
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+# para obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000
+)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod) %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+# calcular indicador i511
+i511 <- temvinculo %>% 
+  left_join(disc_titulados, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i511 = disc_titulados/n_empresas) %>% 
+  mutate(i511_pad =   (i511 - mean(i511))/sdp(i511)) %>%
+  select(id_municipio, nome, sigla_uf, i511, i511_pad) %>%
+  arrange(desc(i511_pad))
+  
+# salvamos o arquivo
+write.csv(i511, "i511.csv", row.names = FALSE)
+```
+
+
+## Script i512 {#i512_script}
+Este script em R refere-se ao [Indicador Proporção de Funcionários em C\&T (i512)](#i512)
+```{r i512, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Proporcao de Funcionarios em C&T (i512)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma função para desvio padrao populacional para ser usada mais a frente no código
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+                  transform(id_municipio = as.character(id_municipio))
+# ------------------------------------------------------------------
+# PASSO 1: obter trabalhadores em ocupacoes C&T
+# ------------------------------------------------------------------
+
+# importamos tabela com ocupacoes de interesse de acordo com CBO (2002)
+# essa tabela nao e usada diretamente neste codigo, mas e usada para auxiliar a criacao da query no Banco dos Dados
+ocupacoes_cet <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inova??o/sd51 Inputs/i512/CBO2002 - Ocupa??o Subgrupo Principal 20 21 30 31 39 72 73.xlsx")
+ocupacoes_cet$cod_cet = as.character(ocupacoes_cet$cod_cet)
+
+# consultamos na RAIS os vinculos de trabalho do ano 2019
+query <- "SELECT valor_remun_media_nominal, ano, id_municipio, cbo_2002 
+FROM `basedosdados.br_me_rais.microdados_vinculos` 
+WHERE ano = 2019
+AND cbo_2002 IN ('201105','201110','201115','201205','201210','201215','201220','201225','202105','202110'
+,'202115','202120','203005','203010','203015','203020','203025','203105','203110','203115'
+,'203120','203125','203205','203210','203215','203220','203225','203230','203305','203310'
+,'203315','203320','203405','203410','203415','203420','203505','203510','203515','203520'
+,'203525','204105','211105','211110','211115','211120','211205','211210','211215','212205'
+,'212210','212215','212305','212310','212315','212320','212405','212410','212415','212420'
+,'212425','212430','213105','213110','213115','213120','213125','213130','213135','213140'
+,'213145','213150','213155','213160','213165','213170','213175','213205','213210','213215'
+,'213305','213310','213315','213405','213410','213415','213420','213425','213430','213435'
+,'213440','214005','214010','214105','214110','214115','214120','214125','214130','214205'
+,'214210','214215','214220','214225','214230','214235','214240','214245','214250','214255'
+,'214260','214265','214270','214280','214305','214310','214315','214320','214325','214330'
+,'214335','214340','214345','214350','214360','214365','214370','214405','214410','214415'
+,'214420','214425','214430','214435','214505','214510','214515','214520','214525','214530'
+,'214535','214605','214610','214615','214705','214710','214715','214720','214725','214730'
+,'214735','214740','214745','214750','214805','214810','214905','214910','214915','214920'
+,'214925','214930','214935','214940','214945','215105','215110','215115','215120','215125'
+,'215130','215135','215140','215145','215150','215205','215210','215215','215220','215305'
+,'215310','215315','300105','300110','300305','301105','301110','301115','301205','311105'
+,'311110','311115','311205','311305','311405','311410','311505','311510','311515','311520'
+,'311605','311610','311615','311620','311625','311705','311710','311715','311720','311725'
+,'312105','312205','312210','312305','312310','312315','312320','313105','313110','313115'
+,'313120','313125','313130','313205','313210','313215','313220','313305','313310','313315'
+,'313320','313405','313410','313415','313505','314105','314110','314115','314120','314125'
+,'314205','314210','314305','314310','314315','314405','314410','314610','314615','314620'
+,'314625','314705','314710','314715','314720','314725','314730','314805','314810','314815'
+,'314825','314830','314835','314840','314845','316105','316110','316115','316120','316305'
+,'316310','316315','316320','316325','316330','316335','316340','317105','317110','317115'
+,'317120','317205','317210','318005','318010','318015','318105','318110','318115','318120'
+,'318205','318210','318215','318305','318310','318405','318410','318415','318420','318425'
+,'318430','318505','318510','318605','318610','318705','318710','318805','318810','318815'
+,'319105','319110','319205','391105','391110','391115','391120','391125','391130','391135'
+,'391140','391145','391205','391210','391215','391220','391225','391230','395105','395110'
+,'720105','720110','720115','720120','720125','720130','720135','720140','720145','720150'
+,'720155','720160','720205','720210','720215','720220','721105','721110','721115','721205'
+,'721210','721215','721220','721225','721305','721310','721315','721320','721325','721405'
+,'721410','721415','721420','721425','721430','722105','722110','722115','722205','722210'
+,'722215','722220','722225','722230','722235','722305','722310','722315','722320','722325'
+,'722330','722405','722410','722415','723105','723110','723115','723120','723125','723205'
+,'723210','723215','723220','723225','723230','723235','723240','723305','723310','723315'
+,'723320','723325','723330','724105','724110','724115','724120','724125','724130','724135'
+,'724205','724210','724215','724220','724225','724230','724305','724310','724315','724320'
+,'724325','724405','724410','724415','724420','724425','724430','724435','724440','724505'
+,'724510','724515','724605','724610','725005','725010','725015','725020','725025','725105'
+,'725205','725210','725215','725220','725225','725305','725310','725315','725320','725405'
+,'725410','725415','725420','725505','725510','725605','725610','725705','730105','731105'
+,'731110','731115','731120','731125','731130','731135','731140','731145','731150','731155'
+,'731160','731165','731170','731175','731180','731205','731305','731310','731315','731320'
+,'731325','731330','732105','732110','732115','732120','732125','732130','732135','732140')
+AND id_municipio IN ('3550308','3304557','5300108','2927408','2304400','3106200','1302603','4106902','2611606','5208707','1501402','4314902','3518800'
+,'3509502','2111300','3304904','2704302','3301702','5002704','2408102','2211001','3548708','3303500','2507507','3549904','3547809'
+,'3543402','2607901','3534401','3170206','3552205','3118601','2800308','2910800','5103403','4209102','5201405','4113700','3136702'
+,'1100205','1500800','3205002','4305108','3303302','3300456','1600303','3301009','4205407','3205200','3529401','3305109','3549805'
+,'3530607','3106705','3548500','4115200','3513801','3525904','1400100','3143302','1200401','2504009','3538709','3510609','2609600'
+,'5201108','3201308','3506003','3523107','3551009','3205309','2604106','2303709','4202404','3516200','4119905','2611101','4304606'
+,'4314407','2933307','3154606','3170107','2610707','4104808','3541000','4125506','3518701','3554102','3526902','3303906','1506807'
+,'1721000','2905701','2408003','3552502','3552809','5108402','3552403','4316907','4309209', '1504208')"
+ocupacoes_cet <- read_sql(query)
+
+ocupacoes_cet_ice <- ocupacoes_cet %>% count(id_municipio, name = "n_cet") %>%
+                      inner_join(top100_mun_cod, by = 'id_municipio') %>%
+                      select(id_municipio, sigla_uf, nome, n_cet) %>%
+                      arrange(desc(n_cet))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter total de trabalhadores
+# ------------------------------------------------------------------
+
+# obtemos na RAIS total de trabalhadores em cada municipio de interesse
+query <- "SELECT id_municipio, count(*) 
+FROM `basedosdados.br_me_rais.microdados_vinculos` 
+WHERE ano = 2019
+AND id_municipio IN ('3550308','3304557','5300108','2927408','2304400','3106200','1302603','4106902','2611606','5208707','1501402','4314902','3518800'
+,'3509502','2111300','3304904','2704302','3301702','5002704','2408102','2211001','3548708','3303500','2507507','3549904','3547809'
+,'3543402','2607901','3534401','3170206','3552205','3118601','2800308','2910800','5103403','4209102','5201405','4113700','3136702'
+,'1100205','1500800','3205002','4305108','3303302','3300456','1600303','3301009','4205407','3205200','3529401','3305109','3549805'
+,'3530607','3106705','3548500','4115200','3513801','3525904','1400100','3143302','1200401','2504009','3538709','3510609','2609600'
+,'5201108','3201308','3506003','3523107','3551009','3205309','2604106','2303709','4202404','3516200','4119905','2611101','4304606'
+,'4314407','2933307','3154606','3170107','2610707','4104808','3541000','4125506','3518701','3554102','3526902','3303906','1506807'
+,'1721000','2905701','2408003','3552502','3552809','5108402','3552403','4316907','4309209', '1504208')
+GROUP BY id_municipio"
+trabalhadores <- read_sql(query, page_size = 300000)
+
+trabalhadores_ice <- trabalhadores %>% inner_join(top100_mun_cod, by = "id_municipio") %>%
+                  rename(trabalhadores = f0_) %>%
+                  select(id_municipio, nome, sigla_uf, trabalhadores) %>%
+                  arrange(desc(trabalhadores))
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indice
+# ------------------------------------------------------------------
+
+# calcular e padronizar indice i512
+i512 <- trabalhadores_ice %>% 
+        inner_join(ocupacoes_cet_ice, by = c('id_municipio','nome', 'sigla_uf')) %>%
+        mutate(i512 = n_cet/trabalhadores) %>%
+        mutate(i512_pad = (i512 - mean(i512))/sdp(i512)) %>%
+        arrange(desc(i512_pad)) %>%
+        select(id_municipio, nome, sigla_uf, i512, i512_pad)
+
+# exportar arquivo
+write.csv(i512, "i512.csv", row.names = FALSE)  
+```
+
+
+## Script i513 {#i513_script}
+Este script em R refere-se ao [Indicador Média de Investimentos do BNDES e da FINEP (i513)](#i513)
+```{r i513, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+library('readODS')
+
+# Indicador Media de Investimentos do BNDES e da FINEP (i513)
+
+# ------------------------------------------------------------------
+# PASSO 0 : preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funÃ§Ã£o para desvio padrao populacional 
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+top100_mun_cod$NOME = toupper(top100_mun_cod$nome)
+
+# ------------------------------------------------------------------
+# PASSO 1 : obter dados do BNDES
+# ------------------------------------------------------------------
+
+# importar tabela do BNDES com informacoes sobre investimentos nos municipios
+bndes <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                    sd51 Inputs/i513/naoautomaticas.xlsx", skip = 4)
+
+# selecionamos apenas os municipios do ICE 
+# agrupamos e somamos por municipio os valores de 2020
+bndes_ice <- top100_mun_cod %>% 
+            left_join(bndes, by = c('id_municipio' = 'Município - código')) %>%
+            rename(data = "Data da contratação",
+                   valor = "Valor contratado  R$") %>%
+            filter(data >= as.POSIXct("2020-01-01"),
+                  data <= as.POSIXct("2020-12-31")) %>%
+            group_by(id_municipio, nome, sigla_uf) %>%
+            summarise(contratado = sum(valor)) %>%
+            arrange(desc(contratado)) %>%
+            right_join(top100_mun_cod, by = c('id_municipio',
+                                              'nome','sigla_uf')) %>%
+            replace_na(list(contratado = 0))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter dados da FINEP
+# ------------------------------------------------------------------
+
+# importamos a tabela com informacoes sobre projetos contratados da FINEP
+finep <- read_ods("C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                  sd51 Inputs/i513/17_08_2021_Contratacao.ods", skip = 5)
+
+# alterar nomes e tipo de colunas de interesse
+finep <- finep %>% rename(data = "Data Assinatura",
+                          valor = "Valor Finep", 
+                          NOME = "Município", 
+                          sigla_uf = "UF")
+finep$data = as.POSIXct(finep$data, format = "%d/%m/%Y")
+finep$NOME = toupper(finep$NOME)
+
+# filtrar para obter apenas contratos do ano de 2020 
+# agrupar e somar valores de cada municipio
+finep_2020 <- finep %>% 
+              filter(data >= as.POSIXct("2020-01-01"),
+                     data <= as.POSIXct("2020-12-31")) %>%
+              group_by(NOME, sigla_uf) %>%
+              summarise(contratado = sum(valor))
+
+# separar municipios de interesse
+finep_ice <- top100_mun_cod %>% 
+            left_join(finep_2020, by = c('NOME', 'sigla_uf')) %>%
+            replace_na(list(contratado = 0)) %>%
+            select(-NOME) %>%
+            arrange(desc(contratado))
+
+# ------------------------------------------------------------------
+# PASSO 3: obter numero de empresas com pelo menos um funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados 
+# obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000
+)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 4: calcular indicador i513 e salvar arquivo
+# ------------------------------------------------------------------
+
+i513 <- temvinculo %>% 
+        inner_join(finep_ice, by = c('id_municipio','nome','sigla_uf')) %>%
+        inner_join(bndes_ice, by = c('id_municipio','nome','sigla_uf'), 
+                   suffix = c('_finep', '_bndes')) %>%
+        mutate(i513 = (contratado_finep + contratado_bndes)/n_empresas) %>%
+        mutate(i513_pad = (i513 - mean(i513))/sdp(i513)) %>%
+        select(id_municipio, nome, sigla_uf, i513, i513_pad) %>%
+        arrange(desc(i513_pad))
+
+# salvamos o arquivo com o indicador
+write.csv(i513, "i513.csv", row.names = FALSE) 
+
+```
+
+
+
+## Script i514 {#i514_script}
+Este script em R refere-se ao [Indicador Infraestrutura Tecnológica (i514)](#i514)
+```{r i514, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+
+# Indicador Infraestrutura Tecnologica (i514)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1 e 2: obter planilha com dados do indicador e padronizar
+# ------------------------------------------------------------------
+
+i514 <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                   sd51 Inputs/i514/Indicador Infraestrutura Tecnológica.xlsx", 
+                   sheet = 2) %>%
+        inner_join(top100_mun_cod, by = c('Cidade' = 'nome')) %>%
+        rename(i514 = Indicador, nome = Cidade) %>%
+        mutate(i514_pad = (i514 - mean(i514))/sdp(i514)) %>%
+        select(id_municipio, nome, sigla_uf, i514, i514_pad) 
+  
+# salvamos o arquivo com o indicador
+write.csv(i514, "i514.csv", row.names = FALSE) 
+```
+
+
+## Script i515 {#i515_script}
+Este script em R refere-se ao [Indicador Contratos de Concessão (i515)](#i515)
+```{r i515, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+
+# Indicador Contratos de Concessao (i515)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.numeric(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: importar indicador do ano passado e padronizar
+# ------------------------------------------------------------------
+
+i515 <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                   sd51 Inputs/i515/Indicador Contratos de Concessão.xlsx", 
+                   sheet = "Indicador") %>%
+        rename(nome = Cidade,
+               id_municipio = Código,
+               i515 = Indicador) %>%
+        mutate(i515_pad = (i515 - (mean(i515)))/sdp(i515)) %>%
+        inner_join(top100_mun_cod, by = c('id_municipio', 'nome')) %>%
+        select(id_municipio, nome, sigla_uf, i515, i515_pad) %>%
+        arrange(desc(i515_pad))
+
+# ------------------------------------------------------------------
+# PASSO 2: exportar indicador 
+# ------------------------------------------------------------------
+
+# salvamos o arquivo com o indicador
+write.csv(i515, "i515.csv", row.names = FALSE) 
+```
+
+
+
+## Script i521 {#i521_script}
+Este script em R refere-se ao [Indicador Patentes (i521)](#i521)
+```{r i521, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+#  Indicador Patentes (i521)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funcao para desvio padrao populacional 
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.numeric(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter dados de depositos de patentes
+# ------------------------------------------------------------------
+
+# importar planilhas com dados de depositos de patentes
+# nesta planilha, foram feitas pequenas alteracoes em celulas mescladas
+patentes_pi <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                          d5 Inovação/sd52 Outputs/i521/
+                          5a - Depósitos de Patentes do Tipo PI por Cidade.xls', 
+                          skip = 7) %>% 
+  na.omit() %>% 
+  rename(ano2018 = '2018', ano2019 = '2019', id_municipio = 'Cod IBGE', 
+         nome = 'Cidade') %>%
+  mutate(pat_pi = ano2018 + ano2019) %>%
+  select(id_municipio, nome, pat_pi)
+
+patentes_mu <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                          d5 Inovação/sd52 Outputs/i521/
+                          5b - Depósitos de Patentes do Tipo MU por Cidade.xls', 
+                          skip = 7) %>% 
+  na.omit() %>% 
+  rename(ano2018 = '2018', ano2019 = '2019', id_municipio = 'Cod IBGE', 
+         nome = 'Cidade') %>%
+  mutate(pat_mu = ano2018 + ano2019) %>%
+  select(id_municipio, nome, pat_mu)
+
+patentes_ca <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                          d5 Inovação/sd52 Outputs/i521/
+                          5c - Depósitos de Patentes do Tipo CA por Cidade.xls', 
+                          skip = 7) %>% 
+  na.omit() %>% 
+  rename(ano2018 = '2018', ano2019 = '2019', id_municipio = 'Cod IBGE', 
+         nome = 'Cidade') %>%
+  mutate(pat_ca = ano2018 + ano2019) %>%
+  select(id_municipio, nome, pat_ca) %>%
+  transform(id_municipio = as.numeric(id_municipio))
+
+# juntar as tres tabelas
+patentes <- patentes_pi %>%
+  full_join(patentes_mu, by = c('id_municipio', 'nome')) %>%
+  full_join(patentes_ca, by = c('id_municipio', 'nome')) %>%
+  replace_na(list(pat_pi = 0,
+                  pat_mu = 0,
+                  pat_ca = 0)) %>%
+  mutate(pat = pat_pi + pat_mu + pat_ca) %>%
+  select(id_municipio, nome, pat)
+
+# ------------------------------------------------------------------
+# PASSO 2: obter numero de empresas com pelo menos 1 funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+# obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000)
+
+top100_mun_cod$id_municipio = as.character(top100_mun_cod$id_municipio)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: juntar tabelas e calcular indicador
+# ------------------------------------------------------------------
+
+i521 <- temvinculo %>% 
+  transform(id_municipio = as.numeric(id_municipio)) %>%
+  left_join(patentes, by = c('id_municipio', 'nome')) %>%
+  mutate(i521 = pat/n_empresas,
+         i521_pad = (i521 - mean(i521))/sdp(i521)) %>%
+  select(id_municipio, nome, sigla_uf, i521, i521_pad) %>%
+  arrange(desc(i521_pad))
+
+# exportar indicador
+write.csv(i521, "i521.csv", row.names = FALSE) 
+```
+
+
+## Script i522 {#i522_script}
+Este script em R refere-se ao [Indicador Tamanho da Indústria Inovadora (i522)](#i522)
+```{r i522, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Tamanho da Industria Inovadora (i522)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter numero de empresas de industria inovadora
+# ------------------------------------------------------------------
+
+# importar planilha com classificacao cnae de empresas
+cnae <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                   sd52 Outputs/i522/CNAE20_EstruturaDetalhada.xls', 
+                   skip = 2) %>%
+  select(classe = Classe, 
+         denom = Denominação)
+
+# remover "-" e "." das classes CNAE
+cnae$classe = gsub('[[:punct:]]', '', cnae$classe)
+
+# importar planilha do ICE 2020 com classes de industria inovadora
+cnae_ice <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                       d5 Inovação/sd52 Outputs/i522/
+                       Indicador Tamanho da Indústria Inovadora.xlsx', 
+                       sheet = 2) %>%
+  select(denom = "CNAE 2.0 Classe") %>%
+  inner_join(cnae, by = 'denom') %>%
+  na.omit()
+
+# obter numero de empresas de industria inovadora a partir da RAIS estabelecimentos
+query <- "SELECT ano, id_municipio, cnae_2 
+FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+WHERE ano = 2019
+AND id_municipio IN ('3550308','3304557','5300108','2927408','2304400','3106200','1302603','4106902','2611606','5208707','1501402','4314902','3518800'
+,'3509502','2111300','3304904','2704302','3301702','5002704','2408102','2211001','3548708','3303500','2507507','3549904','3547809'
+,'3543402','2607901','3534401','3170206','3552205','3118601','2800308','2910800','5103403','4209102','5201405','4113700','3136702'
+,'1100205','1500800','3205002','4305108','3303302','3300456','1600303','3301009','4205407','3205200','3529401','3305109','3549805'
+,'3530607','3106705','3548500','4115200','3513801','3525904','1400100','3143302','1200401','2504009','3538709','3510609','2609600'
+,'5201108','3201308','3506003','3523107','3551009','3205309','2604106','2303709','4202404','3516200','4119905','2611101','4304606'
+,'4314407','2933307','3154606','3170107','2610707','4104808','3541000','4125506','3518701','3554102','3526902','3303906','1506807'
+,'1721000','2905701','2408003','3552502','3552809','5108402','3552403','4316907','4309209','1504208')"
+
+estabelec <- read_sql(query)
+
+estabelec_ice <- estabelec %>%
+  group_by(id_municipio) %>%
+  count(cnae_2, name = 'n_empresas') %>%
+  inner_join(top100_mun_cod, by = 'id_municipio') %>%
+  inner_join(cnae_ice, by = c('cnae_2' = 'classe')) %>%
+  group_by(id_municipio, nome, sigla_uf) %>%
+  summarise(empresas_inovadoras = sum(n_empresas)) %>%
+  arrange(desc(empresas_inovadoras))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter numero de empresas com mais de um funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+# obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+i522 <- temvinculo %>% 
+  inner_join(estabelec_ice, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i522 = empresas_inovadoras/n_empresas,
+         i522_pad = (i522 - mean(i522))/sdp(i522)) %>%
+  select(id_municipio, nome, sigla_uf, i522, i522_pad) %>%
+  arrange(desc(i522_pad))
+
+# exportar indicador
+write.csv(i522, "i522.csv", row.names = FALSE)
+```
+
+
+## Script i523 {#i523_script}
+Este script em R refere-se ao [Indicador Tamanho da Economia Criativa (i523)](#i523)
+```{r i523, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Tamanho da Economia Criativa (i523)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funcao para desvio padrao populacional 
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter numero de empresas de economia criativa
+# ------------------------------------------------------------------
+
+# importar planilha com classificacao cnae de empresas
+cnae <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                   sd52 Outputs/i522/CNAE20_EstruturaDetalhada.xls', 
+                   skip = 2) %>%
+  select(classe = Classe, 
+         denom = Denominação) %>%
+  na.omit()
+
+# remover "-" e "." das classes CNAE
+cnae$classe = gsub('[[:punct:]]', '', cnae$classe)
+
+# importar planilha do ICE 2020 com classes de industria inovadora
+cnae_ice_2 <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                         d5 Inovação/sd52 Outputs/i523/
+                         Indicador Tamanho da Economia Criativa.xlsx', 
+                         sheet = 2) %>%
+  select(denom = "CNAE 2.0 Classe") %>%
+  left_join(cnae, by = 'denom') %>%
+  na.omit()
+
+# obter numero de empresas de industria inovadora a partir da RAIS estabelecimentos
+query <- "SELECT ano, id_municipio, cnae_2 
+FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+WHERE ano = 2019
+AND id_municipio IN ('3550308','3304557','5300108','2927408','2304400','3106200','1302603','4106902','2611606','5208707','1501402','4314902','3518800'
+,'3509502','2111300','3304904','2704302','3301702','5002704','2408102','2211001','3548708','3303500','2507507','3549904','3547809'
+,'3543402','2607901','3534401','3170206','3552205','3118601','2800308','2910800','5103403','4209102','5201405','4113700','3136702'
+,'1100205','1500800','3205002','4305108','3303302','3300456','1600303','3301009','4205407','3205200','3529401','3305109','3549805'
+,'3530607','3106705','3548500','4115200','3513801','3525904','1400100','3143302','1200401','2504009','3538709','3510609','2609600'
+,'5201108','3201308','3506003','3523107','3551009','3205309','2604106','2303709','4202404','3516200','4119905','2611101','4304606'
+,'4314407','2933307','3154606','3170107','2610707','4104808','3541000','4125506','3518701','3554102','3526902','3303906','1506807'
+,'1721000','2905701','2408003','3552502','3552809','5108402','3552403','4316907','4309209','1504208')"
+
+estabelec <- read_sql(query)
+
+estabelec_ice_2 <- estabelec %>%
+  group_by(id_municipio) %>%
+  count(cnae_2, name = 'n_empresas') %>%
+  inner_join(top100_mun_cod, by = 'id_municipio') %>%
+  inner_join(cnae_ice_2, by = c('cnae_2' = 'classe')) %>%
+  group_by(id_municipio, nome, sigla_uf) %>%
+  summarise(empresas_criativas = sum(n_empresas)) %>%
+  arrange(desc(empresas_criativas))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter numero de empresas com mais de um funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+# obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+i523 <- temvinculo %>% 
+  inner_join(estabelec_ice_2, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i523 = empresas_criativas/n_empresas,
+         i523_pad = (i523 - mean(i523))/sdp(i523)) %>%
+  select(id_municipio, nome, sigla_uf, i523, i523_pad) %>%
+  arrange(desc(i523_pad))
+
+# exportar indicador
+write.csv(i523, "i523.csv", row.names = FALSE)
+```
+
+
+
+## Script i524 {#i524_script}
+Este script em R refere-se ao [Indicador Tamanho das Empresas TIC (i514)](#i524)
+```{r i524, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Tamanho das Empresas TIC (i524)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funÃ§Ã£o para desvio padrao populacional 
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter numero de empresas TIC
+# ------------------------------------------------------------------
+
+# importar planilha com classificacao cnae de empresas
+cnae <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/d5 Inovação/
+                   sd52 Outputs/i522/CNAE20_EstruturaDetalhada.xls', 
+                   skip = 2) %>%
+  select(classe = Classe, 
+         denom = Denominação) %>%
+  na.omit()
+
+# remover "-" e "." das classes CNAE
+cnae$classe = gsub('[[:punct:]]', '', cnae$classe)
+
+# importar planilha do ICE 2020 com classes de industria inovadora
+cnae_ice_3 <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                         d5 Inovação/sd52 Outputs/i524/
+                         Indicador Tamanho das Empresas TIC.xlsx', 
+                         sheet = 2) %>%
+  select(denom = "CNAE 2.0 Classe") %>%
+  left_join(cnae, by = 'denom') %>%
+  na.omit()
+
+# obter numero de empresas de industria inovadora a partir da RAIS estabelecimentos
+query <- "SELECT ano, id_municipio, cnae_2 
+FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+WHERE ano = 2019
+AND id_municipio IN ('3550308','3304557','5300108','2927408','2304400','3106200','1302603','4106902','2611606','5208707','1501402','4314902','3518800'
+,'3509502','2111300','3304904','2704302','3301702','5002704','2408102','2211001','3548708','3303500','2507507','3549904','3547809'
+,'3543402','2607901','3534401','3170206','3552205','3118601','2800308','2910800','5103403','4209102','5201405','4113700','3136702'
+,'1100205','1500800','3205002','4305108','3303302','3300456','1600303','3301009','4205407','3205200','3529401','3305109','3549805'
+,'3530607','3106705','3548500','4115200','3513801','3525904','1400100','3143302','1200401','2504009','3538709','3510609','2609600'
+,'5201108','3201308','3506003','3523107','3551009','3205309','2604106','2303709','4202404','3516200','4119905','2611101','4304606'
+,'4314407','2933307','3154606','3170107','2610707','4104808','3541000','4125506','3518701','3554102','3526902','3303906','1506807'
+,'1721000','2905701','2408003','3552502','3552809','5108402','3552403','4316907','4309209','1504208')"
+
+estabelec <- read_sql(query)
+
+estabelec_ice_3 <- estabelec %>%
+  group_by(id_municipio) %>%
+  count(cnae_2, name = 'n_empresas') %>%
+  inner_join(top100_mun_cod, by = 'id_municipio') %>%
+  inner_join(cnae_ice_3, by = c('cnae_2' = 'classe')) %>%
+  group_by(id_municipio, nome, sigla_uf) %>%
+  summarise(empresas_tic = sum(n_empresas)) %>%
+  arrange(desc(empresas_tic))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter numero de empresas com mais de um funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+#obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+i524 <- temvinculo %>% 
+  inner_join(estabelec_ice_3, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i524 = empresas_tic/n_empresas,
+         i524_pad = (i524 - mean(i524))/sdp(i524)) %>%
+  select(id_municipio, nome, sigla_uf, i524, i524_pad) %>%
+  arrange(desc(i524_pad))
+
+# exportar indicador
+write.csv(i524, "i524.csv", row.names = FALSE)
+```
+
+
+## Script i611 {#i611_script}
+Este script em R refere-se ao [Indicador Nota do Ideb (i611)](#i611)
+```{r i611, echo = TRUE, eval = FALSE}
+library(tidyverse)
+library("basedosdados")
+library(readxl)
+
+# Indicador Nota do Ideb (i611)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+#definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+top100_mun_cod$NOME <- toupper(top100_mun_cod$nome)
+
+# ------------------------------------------------------------------
+# PASSO 1: obter notas ideb 2019
+# ------------------------------------------------------------------
+
+#importamos a base de dados necessaria para calcular o indicador
+ideb <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/
+                   d6 Capital Humano/
+                   sd61 Acesso e Qualidade da Mão de Obra Básica/
+                   i611 base de dados.xlsx", range = "A2:J5570")
+ideb_2019 <- ideb %>% select((1:2), '2019') %>% 
+  rename(sigla_uf = UF, 
+         Ideb_2019 = "2019",
+         NOME = 'Município')
+
+# juntar com tabela dos municipios mais populosos
+ideb_100mun <- top100_mun_cod %>% 
+  left_join(ideb_2019, by = c("NOME", "sigla_uf")) %>% 
+  select(-NOME)
+
+# ------------------------------------------------------------------
+# PASSO 2: calcular indicador e padroniza-lo
+# ------------------------------------------------------------------
+
+i611 <- ideb_100mun %>% 
+  rename(i611 = Ideb_2019) %>% 
+  transform(i611 = as.numeric(i611), 
+            id_municipio = as.character(id_municipio)) %>% 
+  mutate(i611_pad = (i611 - mean(i611))/sdp(i611))
+
+# exportar tabela com indicador
+write.csv(i611, "i611.csv", row.names = FALSE)
+```
+
+## Script i612 {#i612_script}
+Este script em R refere-se ao [Indicador Proporção de adultos com pelo menos o Ensino Médio completo (i612)](#i612)
+```{r i612, echo = TRUE, eval = FALSE}
+library(tidyverse)
+
+# Indicador Proporcao de adultos com pelo menos o Ensino Medio completo (i612)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com os municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.integer(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter dados do ENEM
+# ------------------------------------------------------------------
+
+#importamos a base de dados do ENEM
+ENEM_2019 <- data.table::fread(input='C:/Users/User/OneDrive/Documentos/
+                               ICE 2021/d6 Capital Humano/
+                               sd61 Acesso e Qualidade da Mão de Obra Básica/
+                               Downloads/DADOS/MICRODADOS_ENEM_2019.csv',
+                               integer64='character',
+                               skip=0,  #Ler do inicio
+                               nrow=-1, #Ler todos os registros
+                               na.strings = "", 
+                               showProgress = TRUE)
+
+# selecionamos variaveis de interesse
+ENEM_2019 <- ENEM_2019 %>% 
+  select(NU_INSCRICAO, 
+         NU_ANO, 
+         CO_MUNICIPIO_ESC, 
+         CO_MUNICIPIO_RESIDENCIA, 
+         CO_ESCOLA, 
+         TP_ST_CONCLUSAO, 
+         TP_ENSINO, 
+         NU_NOTA_CH, 
+         NU_NOTA_CN, 
+         NU_NOTA_LC, 
+         NU_NOTA_MT, 
+         NU_NOTA_REDACAO, 
+         Q001, 
+         Q002)
+
+# unimos as duas tabelas para selecionar apenas os inscritos dos municipios ICE
+ENEM_100mun <- top100_mun_cod %>% 
+  left_join(ENEM_2019, by = c("id_municipio" = "CO_MUNICIPIO_ESC"))
+
+# salvamos essa tabela para usar em outros indices
+write.csv(ENEM_100mun, "ENEM_100mun.csv", row.names = FALSE)
+
+# contamos a quantidade de inscritos por municipio
+inscritos_mun <- ENEM_100mun %>% 
+  count(id_municipio, nome, sigla_uf, sort = TRUE) %>% 
+  rename(inscritos = n)
+
+# criamos um vetor com as respostas do questionario que selecionam pai ou mae 
+# com EM completo (ver dicionario dos microdados ENEM 2019)
+alvo_EM <- c("E", "F", "G")
+
+# contamos a quantidade de inscritos que declaram ter pai com EM completo
+pai_EM <- ENEM_100mun %>% 
+  filter(Q001 %in% alvo_EM) %>% 
+  count(id_municipio, nome, sigla_uf, sort = TRUE) %>% 
+  rename(pai_EM = n)
+
+# contamos a quantidade de inscritos que declaram ter mae com EM completo
+mae_EM <- ENEM_100mun %>% 
+  filter(Q002 %in% alvo_EM) %>% 
+  count(id_municipio, nome, sigla_uf, sort = TRUE) %>% 
+  rename(mae_EM = n)
+
+# juntamos as tres tabelas:
+# inscritos totais, inscritos com pais com EM, incritos com mae com EM
+paimae_EM <- pai_EM %>% 
+  inner_join(mae_EM, by = c('id_municipio', 'nome', 'sigla_uf')) %>% 
+  inner_join(inscritos_mun, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(prop_paiEM = pai_EM/inscritos,
+         prop_maeEM = mae_EM/inscritos) %>%
+  mutate(i612 = (prop_paiEM + prop_maeEM)/2)
+
+# ------------------------------------------------------------------
+# PASSO 2: calcular o indicador
+# ------------------------------------------------------------------
+
+# calculamos e padronizamos o indicador
+i612 <- paimae_EM %>% 
+  select(id_municipio, nome, sigla_uf, i612) %>% 
+  transform(i612 = as.numeric(i612), 
+            id_municipio = as.character(id_municipio)) %>% 
+  mutate(i612_pad = (i612 - mean(i612))/sdp(i612)) 
+
+# exportamos o indicador
+write.csv(i612, "i612.csv", row.names = FALSE)
+```
+
+
+
+## Script i613 {#i613_script}
+Este script em R refere-se ao [Indicador Taxa Líquida de Matrícula no Ensino Médio (i613)](#i613)
+```{r i613, echo = TRUE, eval = FALSE}
+library(tidyverse)
+library("basedosdados")
+library(readxl)
+
+# Indicador Taxa Liquida de Matricula no Ensino Medio (i613)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com os municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter numero de alunos entre 15 e 17 no EM
+# ------------------------------------------------------------------
+
+# importamos os dados do censo escolar de 2020 com alunos 
+# de 15 a 17 anos matriculados no EM
+query <- "SELECT ano, id_municipio, sigla_uf, idade_referencia, 
+etapa_ensino FROM `basedosdados.br_inep_censo_escolar.matricula` 
+WHERE ano = 2020
+AND (idade_referencia >= 15 AND idade_referencia <= 17) 
+AND (etapa_ensino IN ('25','26','27','28','29','30','31','32','33','34','35','36','37','38'))
+AND id_municipio IN ('3550308','3304557','5300108','2927408','2304400','3106200','1302603','4106902','2611606','5208707','1501402','4314902','3518800'
+,'3509502','2111300','3304904','2704302','3301702','5002704','2408102','2211001','3548708','3303500','2507507','3549904','3547809'
+,'3543402','2607901','3534401','3170206','3552205','3118601','2800308','2910800','5103403','4209102','5201405','4113700','3136702'
+,'1100205','1500800','3205002','4305108','3303302','3300456','1600303','3301009','4205407','3205200','3529401','3305109','3549805'
+,'3530607','3106705','3548500','4115200','3513801','3525904','1400100','3143302','1200401','2504009','3538709','3510609','2609600'
+,'5201108','3201308','3506003','3523107','3551009','3205309','2604106','2303709','4202404','3516200','4119905','2611101','4304606'
+,'4314407','2933307','3154606','3170107','2610707','4104808','3541000','4125506','3518701','3554102','3526902','3303906','1506807'
+,'1721000','2905701','2408003','3552502','3552809','5108402','3552403','4316907','4309209','1504208')"
+censoescolar <- read_sql(query, page_size = 300000)
+
+# contamos a quantidade de alunos de 15 a 17 anos 
+# matriculados no EM por municipio
+matriculados15a17_EM <- censoescolar %>% 
+  count(id_municipio, sigla_uf, sort = TRUE) %>% 
+  rename(matriculados15a17_EM = n)
+
+# ------------------------------------------------------------------
+# PASSO 2: obter populacao entre entre 15 e 17
+# ------------------------------------------------------------------
+
+# importamos tabela do censo 2010 com dados de populacao por municipio e idade
+censo2010 <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/
+                        d6 Capital Humano/
+                        sd61 Acesso e Qualidade da Mão de Obra Básica/
+                        Downloads/censo2010.xlsx", skip = 6)
+pop_15_17 <- top100_mun_cod %>% 
+              left_join(censo2010, by = c("id_municipio" = "Cód.")) %>% 
+              select(id_municipio, nome, sigla_uf, 
+                     "15 anos", "16 anos", "17 anos") %>%
+              rename(anos_15 = "15 anos", 
+                     anos_16 = "16 anos", 
+                     anos_17 = "17 anos") %>%
+              mutate(pop_15a17 = anos_15 + anos_16 + anos_17) %>% 
+              select(-anos_15, -anos_16, -anos_17)
+
+# ------------------------------------------------------------------
+# PASSOS 3 e 4: obter populacao em 2010 e 2021
+# ------------------------------------------------------------------
+
+# importar tabela com populacao total dos municipios em 2010
+query <- "SELECT * FROM `basedosdados.br_ibge_populacao.municipio` 
+WHERE ano = 2010"
+pop_2010 <- read_sql(query)
+
+# obter populacao de 2021
+pop_2021 <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                       estimativa_dou_2021.xls', sheet = 2, skip = 1) %>%
+  na.omit() %>%
+  select(nome = 'NOME DO MUNICÍPIO',
+         sigla_uf = 'UF',
+         populacao = 'POPULAÇÃO ESTIMADA') %>%
+  inner_join(top100_mun_cod, by = c('nome', 'sigla_uf'))
+
+# ------------------------------------------------------------------
+# PASSOS 5: obter fator de crescimento populacional
+# ------------------------------------------------------------------
+
+# calcular fator de crescimento populacional
+cresc_pop <- pop_2010 %>% inner_join(pop_2021, by = "id_municipio", 
+                                     suffix = c("_2010", "_2021")) %>% 
+            mutate(cresc_pop = populacao_2021/populacao_2010) %>%
+            select (-ano, -populacao_2010, -populacao_2021)
+
+# ------------------------------------------------------------------
+# PASSOS 6: obter populacao estimada entre 15 e 17 em 2021
+# ------------------------------------------------------------------
+
+# Calcular populacao estimada em cada municipio entre 15 e 17 anos
+pop_15_17_atual <- pop_15_17 %>% 
+  inner_join(cresc_pop, by = c("id_municipio", "nome", "sigla_uf")) %>%
+                  mutate(pop_15a17_atual = pop_15a17 * cresc_pop) %>%
+                  select(-pop_15a17, -cresc_pop)
+# ------------------------------------------------------------------
+# PASSOS 7: calcular indicador
+# ------------------------------------------------------------------
+
+# calculamos indicador 
+i613 <- pop_15_17_atual %>% inner_join(matriculados15a17_EM, 
+                                       by = c("id_municipio", "sigla_uf")) %>% 
+        mutate(i613 = matriculados15a17_EM/pop_15a17_atual) %>%
+        mutate(i613_pad =  (i613 - mean(i613))/sdp(i613))%>%
+        select(-pop_15a17_atual, -matriculados15a17_EM) %>%
+        arrange(desc(i613_pad))
+
+# salvamos o arquivo
+write.csv(i613, "i613.csv", row.names = FALSE) 
+```
+
+## Script i614 {#i614_script}
+Este script em R refere-se ao [Indicador Nota média no ENEM (i614)](#i614)
+```{r i614, echo = TRUE, eval = FALSE}
+library(tidyverse)
+
+# Indicador Nota Media no ENEM (i614)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.integer(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter dados do ENEM
+# ------------------------------------------------------------------
+
+#importamos a base de dados do ENEM
+ENEM_2019 <- data.table::fread(input='C:/Users/User/OneDrive/
+                               Documentos/ICE 2021/d6 Capital Humano/
+                               sd61 Acesso e Qualidade da Mão de Obra Básica/
+                               Downloads/DADOS/MICRODADOS_ENEM_2019.csv',
+                               integer64='character',
+                               skip=0,  #Ler do inicio
+                               nrow=-1, #Ler todos os registros
+                               na.strings = "", 
+                               showProgress = TRUE)
+
+# selecionamos variaveis de interesse
+ENEM_2019 <- ENEM_2019 %>% 
+  select(NU_INSCRICAO, 
+         NU_ANO, 
+         CO_MUNICIPIO_ESC, 
+         CO_MUNICIPIO_RESIDENCIA, 
+         CO_ESCOLA, 
+         TP_ST_CONCLUSAO, 
+         TP_ENSINO, 
+         NU_NOTA_CH, 
+         NU_NOTA_CN, 
+         NU_NOTA_LC, 
+         NU_NOTA_MT, 
+         NU_NOTA_REDACAO, 
+         Q001, 
+         Q002)
+
+# unimos as duas tabelas. selecionar apenas os inscritos dos municipios do ICE
+ENEM_100mun <- top100_mun_cod %>% 
+  left_join(ENEM_2019, by = c("id_municipio" = "CO_MUNICIPIO_ESC"))
+
+# salvamos essa tabela para usar em outros indices
+write.csv(ENEM_100mun, "ENEM_100mun.csv", row.names = FALSE)
+
+# ------------------------------------------------------------------
+# PASSO 1: alternativo
+# ------------------------------------------------------------------
+
+# importar dadoss ENEM dos munipios do ICE
+ENEM_100mun <- read.csv('ENEM_100mun.csv')
+
+# ------------------------------------------------------------------
+# PASSO 2: obter notas medias no ENEM
+# ------------------------------------------------------------------
+
+# calculamos a nota media de cada aluno considerando as 5 provas 
+# ciencias naturais, ciencas humanas, matematica, redacao, linguagens e codigos
+nota_media_ENEM <- ENEM_100mun %>% 
+  mutate(nota_media = (NU_NOTA_CH + NU_NOTA_CN + NU_NOTA_LC + 
+                         NU_NOTA_MT + NU_NOTA_REDACAO)/5) %>% 
+                select (-Q001, -Q002, -NU_ANO, -NU_NOTA_CH, 
+                        -NU_NOTA_CN, -NU_NOTA_LC, -NU_NOTA_MT, 
+                        -NU_NOTA_REDACAO, -CO_MUNICIPIO_RESIDENCIA, 
+                        -CO_ESCOLA, -TP_ST_CONCLUSAO, -TP_ENSINO) %>%
+                drop_na()
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+# calculamos o indicador
+i614 <- nota_media_ENEM %>% 
+  group_by(id_municipio, nome, sigla_uf) %>% 
+  summarise(i614 = mean(nota_media)) %>%
+  ungroup() %>%
+  mutate(i614_pad = (i614 - mean(i614))/sdp(i614)) %>%
+  arrange(desc(i614_pad))
+
+# exportamos o indicador
+write.csv(i614, "i614.csv", row.names = FALSE)
+
+```
+
+
+## Script i615 {#i615_script}
+Este script em R refere-se ao [Indicador Proporção de Matriculados no Ensino Técnico e Profissionalizante (i615)](#i615)
+```{r i615, echo = TRUE, eval = FALSE}
+library(tidyverse)
+library("basedosdados")
+library(readxl)
+
+# Indicador Prop. de Matriculados no Ensino Tecnico e Profissionalizante (i615)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter numero de inscritos no ensino tecnico
+# ------------------------------------------------------------------
+
+query <- "SELECT ano, id_municipio, sigla_uf, idade_referencia, etapa_ensino FROM `basedosdados.br_inep_censo_escolar.matricula` 
+WHERE ano = 2020
+AND (etapa_ensino IN ('30','31','32','33','34','35','36','37','38','39','40','67','68','73','74'))
+AND id_municipio IN ('3550308','3304557','5300108','2927408','2304400','3106200','1302603','4106902','2611606','5208707','1501402','4314902','3518800'
+,'3509502','2111300','3304904','2704302','3301702','5002704','2408102','2211001','3548708','3303500','2507507','3549904','3547809'
+,'3543402','2607901','3534401','3170206','3552205','3118601','2800308','2910800','5103403','4209102','5201405','4113700','3136702'
+,'1100205','1500800','3205002','4305108','3303302','3300456','1600303','3301009','4205407','3205200','3529401','3305109','3549805'
+,'3530607','3106705','3548500','4115200','3513801','3525904','1400100','3143302','1200401','2504009','3538709','3510609','2609600'
+,'5201108','3201308','3506003','3523107','3551009','3205309','2604106','2303709','4202404','3516200','4119905','2611101','4304606'
+,'4314407','2933307','3154606','3170107','2610707','4104808','3541000','4125506','3518701','3554102','3526902','3303906','1506807'
+,'1721000','2905701','2408003','3552502','3552809','5108402','3552403','4316907','4309209','1504208')"
+educ_prof <- read_sql(query)
+
+# contamos a quantidade de alunos matriculados na Educacao Profissional em cada municipio
+matriculados_EP <- educ_prof %>% 
+  count(id_municipio, sigla_uf, sort = TRUE) %>% 
+  rename(matriculados_EP = n)
+
+# ------------------------------------------------------------------
+# PASSO 2: obter populacao de 15 ou mais em 2010
+# ------------------------------------------------------------------
+
+# importamos tabela do censo 2010 com dados de populacao por municipio e idade
+censo2010 <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/
+                        d6 Capital Humano/
+                        sd61 Acesso e Qualidade da Mão de Obra Básica/Downloads/
+                        censo2010.xlsx", skip = 6)
+pop_mais15 <- top100_mun_cod %>% 
+  left_join(censo2010, by = c("id_municipio" = "Cód.")) %>% 
+  select(id_municipio, nome, sigla_uf, Total, "15 a 19 anos", "20 a 24 anos", 
+         "25 a 29 anos", 38:55 ,-"Idade ignorada", -"80 anos ou mais",-Total) %>%
+  mutate(pop_mais15 = rowSums(across(where(is.numeric))))
+
+# ------------------------------------------------------------------
+# PASSO 3: obter populacao dos municipios em 2010
+# ------------------------------------------------------------------
+
+# importar tabela com populacao total dos municipios em 2010
+query <- "SELECT * FROM `basedosdados.br_ibge_populacao.municipio` WHERE ano = 2010"
+pop_2010 <- read_sql(query)
+
+# ------------------------------------------------------------------
+# PASSO 4: obter estimativa populacional de 2021
+# ------------------------------------------------------------------
+
+# obter populacao de 2021
+pop_2021 <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                       estimativa_dou_2021.xls', sheet = 2, skip = 1) %>%
+  na.omit() %>%
+  select(nome = 'NOME DO MUNICÍPIO',
+         sigla_uf = 'UF',
+         populacao = 'POPULAÇÃO ESTIMADA') %>%
+  inner_join(top100_mun_cod, by = c('nome', 'sigla_uf'))
+
+# ------------------------------------------------------------------
+# PASSO 5: calcular fator de crescimento populacional 
+# ------------------------------------------------------------------
+
+# calcular fator de crescimento populacional
+cresc_pop <- pop_2010 %>% inner_join(pop_2021, by = "id_municipio", 
+                                     suffix = c("_2010", "_2021")) %>% 
+  mutate(cresc_pop = populacao_2021/populacao_2010) %>%
+  select (-ano, -populacao_2010, -populacao_2021)
+
+# ------------------------------------------------------------------
+# PASSO 6: calcular populacao estimada com mais de 15 em 2021
+# ------------------------------------------------------------------
+
+# Calcular populacao estimada em cada municipio acima de 15 anos
+pop_mais15_atual <- pop_mais15 %>% 
+  inner_join(cresc_pop, by = c("id_municipio", "nome", "sigla_uf")) %>%
+  mutate(pop_mais15_atual = pop_mais15 * cresc_pop) %>%
+  select(id_municipio, nome, sigla_uf, pop_mais15_atual)
+
+# ------------------------------------------------------------------
+# PASSO 7: calcular indicador
+# ------------------------------------------------------------------
+
+# por fim, calculamos o indice 
+i615 <- pop_mais15_atual %>% 
+  inner_join(matriculados_EP, by = c("id_municipio", "sigla_uf")) %>% 
+  mutate(i615 = matriculados_EP/pop_mais15_atual) %>%
+  mutate(i615_pad =  (i615 - mean(i615))/sdp(i615))%>%
+  select(id_municipio, nome, sigla_uf, i615, i615_pad) %>%
+  arrange(desc(i615_pad))
+
+# salvamos o arquivo
+write.csv(i615, "i615.csv", row.names = FALSE)  
+```
+
+
+
+
+## Script i621 {#i621_script}
+Este script em R refere-se ao [Indicador Proporção de Adultos com pelo Menos Ensino Superior Completo (i621)](#i621)
+```{r i621, echo = TRUE, eval = FALSE}
+library(tidyverse)
+
+# Indicador Proporcao de Adultos com pelo Menos Ensino Superior Completo (i621)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.integer(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter dados do ENEM
+# ------------------------------------------------------------------
+
+#importamos a base de dados do ENEM
+ENEM_2019 <- data.table::fread(input='C:/Users/User/OneDrive/Documentos/
+                               ICE 2021/d6 Capital Humano/
+                               sd61 Acesso e Qualidade da Mão de Obra Básica/
+                               Downloads/DADOS/MICRODADOS_ENEM_2019.csv',
+                               integer64='character',
+                               skip=0,  #Ler do inicio
+                               nrow=-1, #Ler todos os registros
+                               na.strings = "", 
+                               showProgress = TRUE)
+
+# selecionamos variaveis de interesse
+ENEM_2019 <- ENEM_2019 %>% 
+  select(NU_INSCRICAO, 
+         NU_ANO, 
+         CO_MUNICIPIO_ESC, 
+         CO_MUNICIPIO_RESIDENCIA, 
+         CO_ESCOLA, 
+         TP_ST_CONCLUSAO, 
+         TP_ENSINO, 
+         NU_NOTA_CH, 
+         NU_NOTA_CN, 
+         NU_NOTA_LC, 
+         NU_NOTA_MT, 
+         NU_NOTA_REDACAO, 
+         Q001, 
+         Q002)
+
+# unimos as duas tabelas para selecionar apenas os inscritos municipios ICE
+ENEM_100mun <- top100_mun_cod %>% 
+  left_join(ENEM_2019, by = c("id_municipio" = "CO_MUNICIPIO_ESC"))
+
+# salvamos essa tabela para usar em outros indices
+write.csv(ENEM_100mun, "ENEM_100mun.csv", row.names = FALSE)
+
+# ------------------------------------------------------------------
+# PASSO 1: alternativo
+# ------------------------------------------------------------------
+
+# importar dadoss ENEM dos munipios do ICE
+ENEM_100mun <- read.csv('ENEM_100mun.csv')
+
+# ------------------------------------------------------------------
+# PASSO 2: dados do ENEM
+# ------------------------------------------------------------------
+
+# contamos a quantidade de inscritos por municipio
+inscritos_mun <- ENEM_100mun %>% 
+  count(id_municipio, nome, sigla_uf, sort = TRUE) %>% 
+  rename(inscritos = n)
+
+# criamos um vetor com as respostas do questionario que selecionam 
+# pai ou mae com ES completo (ver dicionario dos microdados ENEM 2019)
+alvo_ES <- c("F", "G")
+
+# contamos a quantidade de inscritos que declaram ter pai com ES completo
+pai_ES <- ENEM_100mun %>% 
+  filter(Q001 %in% alvo_ES) %>% 
+  count(id_municipio, nome, sigla_uf, sort = TRUE) %>% 
+  rename(pai_ES = n)
+
+# contamos a quantidade de inscritos que declaram ter mae com ES completo
+mae_ES <- ENEM_100mun %>% 
+  filter(Q002 %in% alvo_ES) %>% 
+  count(id_municipio, nome, sigla_uf, sort = TRUE) %>% 
+  rename(mae_ES = n)
+
+# juntamos as tres tabelas:
+# inscritos totais, inscritos com pais com EM, incritos com mae com EM)
+paimae_ES <- pai_ES %>% 
+  inner_join(mae_ES, by = c('id_municipio', 'nome', 'sigla_uf')) %>% 
+  inner_join(inscritos_mun, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(prop_paiES = pai_ES/inscritos,
+         prop_maeES = mae_ES/inscritos) %>%
+  mutate(i621= (prop_paiES + prop_maeES)/2)
+
+# ------------------------------------------------------------------
+# PASSO 3: calcular indicador
+# ------------------------------------------------------------------
+
+# calculamos e padronizamos o indice
+i621 <- paimae_ES %>% 
+  select(id_municipio, nome, sigla_uf, i621) %>% 
+  transform(id_municipio = as.character(id_municipio)) %>% 
+  mutate(i621_pad = (i621 - mean(i621))/sdp(i621)) 
+
+# exportamos o indicador
+write.csv(i621, "i621.csv", row.names = FALSE)
+```
+
+
+
+
+
+## Script i622 {#i622_script}
+Este script em R refere-se ao [Indicador Proporção de Alunos Concluintes em Cursos de Alta Qualidade (i622)](#i622)
+```{r i622, echo = TRUE, eval = FALSE}
+library(data.table)
+library(readxl)
+library(tidyverse)
+
+# Indicador Proporcao de Alunos Concluintes em Cursos de Alta Qualidade (i622)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funÃ§Ã£o para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.numeric(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: obter concluintes em cursos avaliados pelo enade
+# ------------------------------------------------------------------
+
+# importando os dados. as planilhas sÃ£o baixadas no site do INEP
+conceito_enade2017 = read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/
+                                d6 Capital Humano/sd62/
+                                resultados_conceito_enade_2017.xlsx")
+conceito_enade2018 = read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/
+                                d6 Capital Humano/sd62/
+                                resultados_conceito_enade_2018.xlsx")
+conceito_enade2019 = read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/
+                                d6 Capital Humano/sd62/Conceito_Enade_2019.xlsx")
+
+# juntando as bases de conceito
+conceito_enade = bind_rows(conceito_enade2017, conceito_enade2018, conceito_enade2019)
+
+# selecionar apenas os cursos dos 100 municipios mais populosos
+enade_ice <- top100_mun_cod %>% 
+  left_join(conceito_enade, by = c("id_municipio" = "Código do Município")) %>% 
+  select(-"Município do Curso", - "Sigla da UF") %>%
+  rename(enade_faixa = "Conceito Enade (Faixa)",
+         concl_inscritos = "Nº de Concluintes Inscritos")
+
+enade_ice_resumo <- enade_ice %>% 
+  group_by(id_municipio, nome, sigla_uf,  enade_faixa) %>% 
+  summarise(concluintes = sum(concl_inscritos))
+
+# Obter total de concluintes em todos cursos avaliados pelo ENADE
+concl_grad <- enade_ice_resumo %>% 
+  group_by(id_municipio, nome, sigla_uf) %>% 
+  summarise(tot_concl = sum(concluintes))
+
+
+# obter total de concluintes em cursos com nota 4 ou 5 no ENADE
+concl_alta_quali <- enade_ice_resumo %>% 
+  filter(enade_faixa== 4 | enade_faixa==5) %>% 
+  group_by(id_municipio, nome, sigla_uf) %>% 
+  summarise(tot_alta_quali = sum(concluintes))
+
+# ------------------------------------------------------------------
+# PASSO 2: calcular indicador
+# ------------------------------------------------------------------
+
+#calcular indice 
+i622 <- concl_grad %>% 
+  left_join(concl_alta_quali, by = c("id_municipio", "nome", "sigla_uf")) %>%
+  replace_na(list(tot_alta_quali = 0)) %>%
+  mutate(i622 = tot_alta_quali/tot_concl) %>%
+  transform(i622 = as.numeric(i622)) %>%
+  mutate(i622_pad =  (i622 - mean(i622))/sdp(i622))  %>%
+  select(id_municipio, nome, sigla_uf, i622, i622_pad) %>%
+  arrange(desc(i622_pad))
+
+# salvamos o arquivo
+write.csv(i622, "i622.csv", row.names = FALSE)  
+```
+
+
+
+## Script d7 {#d7_script}
+Este script em R refere-se aos [Indicadores do determinante Cultura (d7)](#d7)
+```{r d7, echo = TRUE, eval = FALSE}
+library(tidyverse)
+
+# Indicadores do Determinante Cultura
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+#definimos uma funcao para desvio padrão amostral
+sdp <- function(x) {
+  sd(x) * (sqrt((length(x) - 1) / length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <-
+  read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>%
+  transform(id_municipio = as.numeric(id_municipio))
+
+# ------------------------------------------------------------------
+# PASSO 1: importar dados sobre pesquisas as palavras-chave
+# ------------------------------------------------------------------
+
+# importar arquivos referentes ao subdeterminante iniciativa (sd71)
+termo_empreendedor <-
+  read.csv(
+    "C:/Users/User/OneDrive/Documentos/ICE 2021/
+                               d7 Determinante Cultura/empreendedor.csv",
+    stringsAsFactors = FALSE,
+    header = 1,
+    skip = 2,
+    fileEncoding = "UTF-8"
+  )
+termo_mei <- read.csv(
+  "C:/Users/User/OneDrive/Documentos/ICE 2021/
+                      d7 Determinante Cultura/mei.csv",
+  stringsAsFactors = FALSE,
+  header = 1,
+  skip = 2,
+  fileEncoding = "UTF-8"
+)
+
+# importar arquivos referentes ao subdeterminante instituicoes (sd72)
+termo_sebrae <-
+  read.csv(
+    "C:/Users/User/OneDrive/Documentos/ICE 2021/
+                         d7 Determinante Cultura/sebrae.csv",
+    stringsAsFactors = FALSE,
+    header = 1,
+    skip = 2,
+    fileEncoding = "UTF-8"
+  )
+termo_franquia <-
+  read.csv(
+    "C:/Users/User/OneDrive/Documentos/ICE 2021/
+                           d7 Determinante Cultura/franquia.csv",
+    stringsAsFactors = FALSE,
+    header = 1,
+    skip = 2,
+    fileEncoding = "UTF-8"
+  )
+termo_simplesnacional <-
+  read.csv(
+    "C:/Users/User/OneDrive/Documentos/
+                                  ICE 2021/d7 Determinante Cultura/
+                                  simples nacional.csv",
+    stringsAsFactors = FALSE,
+    header = 1,
+    skip = 2,
+    fileEncoding = "UTF-8"
+  )
+termo_senac <- read.csv(
+  "C:/Users/User/OneDrive/Documentos/ICE 2021/
+                        d7 Determinante Cultura/senac.csv",
+  stringsAsFactors = FALSE,
+  header = 1,
+  skip = 2,
+  fileEncoding = "UTF-8"
+)
+
+
+# calcular indicador pesquisas com o termo 'empreendedor'
+i711 <- top100_mun_cod %>%
+  left_join(termo_empreendedor, by = c("nome" = "City")) %>%
+  replace_na(list(empreendedor...2020. = 0)) %>%
+  rename(i711 = empreendedor...2020.) %>%
+  mutate(i711_pad = (i711 - mean(i711)) / sdp(i711)) %>%
+  arrange(desc(i711_pad))
+
+# calcular indicador pesquisas com o termo 'mei'
+i712 <- top100_mun_cod %>%
+  left_join(termo_mei, by = c("nome" = "City")) %>%
+  replace_na(list(MEI...2020. = 0)) %>%
+  rename(i712 = MEI...2020.) %>%
+  mutate(i712_pad = (i712 - mean(i712)) / sdp(i712)) %>%
+  arrange(desc(i712_pad))
+
+
+# calcular indicador pesquisas com o termo 'sebrae'
+i721 <-
+  top100_mun_cod %>% left_join(termo_sebrae, by = c("nome" = "City")) %>%
+  replace_na(list(Sebrae...2020. = 0)) %>%
+  rename(i721 = Sebrae...2020.) %>%
+  mutate(i721_pad = (i721 - mean(i721)) / sdp(i721)) %>%
+  arrange(desc(i721_pad))
+
+# calcular indicador pesquisas com o termo 'franquia'
+i722 <-
+  top100_mun_cod %>% left_join(termo_franquia, by = c("nome" = "City")) %>%
+  replace_na(list(Franquia...2020. = 0)) %>%
+  rename(i722 = Franquia...2020.) %>%
+  mutate(i722_pad = (i722 - mean(i722)) / sdp(i722)) %>%
+  arrange(desc(i722_pad))
+
+# calcular indicador pesquisas com o termo 'simples nacional'
+i723 <-
+  top100_mun_cod %>% 
+  left_join(termo_simplesnacional, by = c("nome" = "City")) %>%
+  replace_na(list(SIMPLES.Nacional...2020. = 0)) %>%
+  rename(i723 = SIMPLES.Nacional...2020.) %>%
+  mutate(i723_pad = (i723 - mean(i723)) / sdp(i723)) %>%
+  arrange(desc(i723_pad))
+
+# calcular indicador pesquisas com o termo 'senac'
+i724 <-
+  top100_mun_cod %>% left_join(termo_senac, by = c("nome" = "City")) %>%
+  replace_na(list(Senac...2020. = 0)) %>%
+  rename(i724 = Senac...2020.) %>%
+  mutate(i724_pad = (i724 - mean(i724)) / sdp(i724)) %>%
+  arrange(desc(i724_pad))
+
+# exportar indicadores do determinante cultura
+write.csv(i711, "i711.csv", row.names = FALSE)
+write.csv(i712, "i712.csv", row.names = FALSE)
+write.csv(i721, "i721.csv", row.names = FALSE)
+write.csv(i722, "i722.csv", row.names = FALSE)
+write.csv(i723, "i723.csv", row.names = FALSE)
+write.csv(i724, "i724.csv", row.names = FALSE)  
+
+```
+## Script i323 {#i323_script}
+Este script em R refere-se aos [Indicador Compras Públicas (i323)](#i323)
+```{r i323, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Compras Publicas (i323)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# ------------------------------------------------------------------
+# PASSO 1: obter despesas e investimentos das prefeituras
+# ------------------------------------------------------------------
+
+# importar planilha com dados de despesas orcamentarias dos municipios
+despesas <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                      d3 Mercado/sd32/i323/finbra.csv', skip = 3)  
+  
+despesas_mun <- despesas %>% 
+  select(id_municipio = 'Cod.IBGE',
+         sigla_uf = UF,
+         Conta,
+         Valor) %>%
+  filter(Conta == '3.0.00.00.00 - Despesas Correntes' | 
+           Conta == '4.4.00.00.00 - Investimentos') %>%
+  group_by(id_municipio, sigla_uf) %>%
+  summarise(desp_inv = sum(Valor)) %>%
+  transform(id_municipio = as.character(id_municipio)) %>%
+  inner_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf')) %>%
+  replace_na(list(desp_inv = 0))
+  
+# importar planilha com dados de brasilia
+despesas_df <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                         d3 Mercado/sd32/i323/finbra-df.csv', skip = 3)  
+
+despesas_df <- despesas_df %>% 
+  select(id_estado = 'Cod.IBGE',
+         sigla_uf = UF,
+         Conta,
+         Valor) %>%
+  filter(Conta == '3.0.00.00.00 - Despesas Correntes' |
+           Conta == '4.4.00.00.00 - Investimentos',
+         sigla_uf == 'DF') %>%
+  group_by(sigla_uf) %>%
+  summarise(desp_inv = sum(Valor)) 
+
+despesas_ice <- bind_rows(despesas_df, despesas_mun)
+despesas_ice[1,3] = '5300108'
+despesas_ice[1,4] = 'Brasília'
+
+despesas_ice <- despesas_ice %>%
+  right_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf', 'nome')) %>%
+  replace_na(list(desp_inv = 0)) %>%
+  select(id_municipio, nome, sigla_uf, desp_inv) %>%
+  arrange(desc(desp_inv))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter numero de empresas com pelo menos 1 funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+# obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: juntar tabelas e calcular indicador
+# ------------------------------------------------------------------
+
+i323 <- despesas_ice %>%
+  inner_join(temvinculo, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i323 = desp_inv/n_empresas,
+         i323_pad = (i323 - mean(i323))/sdp(i323)) %>%
+  select(id_municipio, nome, sigla_uf, i323, i323_pad) %>%
+  arrange(desc(i323_pad))
+  
+# exportar indicador
+write.csv(i323, "i323.csv", row.names = FALSE)
+```
 

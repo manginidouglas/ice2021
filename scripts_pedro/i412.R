@@ -17,14 +17,19 @@ top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
 top100_mun_cod <- top100_mun_cod %>% 
   transform(id_municipio = as.character(id_municipio))
 
+# importar tabela pib municipal
+# dado levantado para o indicador pib per capita (i321)
+
+pib_mun <- read.csv('pib_mun.csv', stringsAsFactors =  FALSE)
+pib_mun$id_municipio = as.character(pib_mun$id_municipio)
+
 # ------------------------------------------------------------------
 # PASSO 1: obter capital de risco por municipio no ultimo ano
 # ------------------------------------------------------------------
 
 # importar tabela construida manualmente a partir do site crunchbase
 # taxa media de cambio do ultimo ano: 5.360819 para dolar e 6.408495 para euro
-caprisco <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
-                       d4 Acesso a Capital/sd41/i412/caprisco.xlsx', sheet = 2)
+caprisco <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/d4 Acesso a Capital/sd41/i412/caprisco.xlsx', sheet = 2)
 
 caprisco_dolar <- caprisco %>% 
   filter(dolar ==1) %>%
@@ -45,15 +50,16 @@ caprisco_ice <- rbind(caprisco_real, caprisco_dolar, caprisco_euro) %>%
   summarise(valor_total = sum(valor)) %>%
   right_join(top100_mun_cod, by = c('nome', 'sigla_uf')) %>%
   replace_na(list(valor_total = 0)) %>%
-  select(id_municipio, nome, sigla_uf, valor_total)
+  inner_join(pib_mun, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  select(id_municipio, nome, sigla_uf, valor_total, pib)
 
 # ------------------------------------------------------------------
-# PASSO 1: padronizar indicador
+# PASSO 1: calcular e padronizar indicador
 # ------------------------------------------------------------------
 
 i412 <- caprisco_ice %>%
   transform(valor_total = as.numeric(valor_total)) %>%
-  mutate(i412 = valor_total,
+  mutate(i412 = valor_total/pib,
          i412_pad = (i412 - mean(i412))/sdp(i412)) %>%
   select(id_municipio, nome, sigla_uf, i412, i412_pad) %>%
   arrange(desc(i412_pad))

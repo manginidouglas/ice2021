@@ -165,7 +165,7 @@ Período: 2018
 Comentário: Não há novos dados desde a última edição do ICE, então usamos os valores passados. 
 
 
-## Subdeterminante Complexidade burocrática {#sd13}
+## Complexidade burocrática {#sd13}
 
 clique [aqui](#sd13_script) para ver o script
 
@@ -348,7 +348,7 @@ Comentário: Razão de duas proporções: empresas grandes por empresas médias 
 Este indicador refere-se ao total de despesas e investimentos feitos pela prefeitura dividido pelo número de empresas com pelo menos um funcionário no município. Os seguintes passos descrevem o procedimento adotado para se chegar ao indicador:  
 
 1. Obter valor total de despesas e investimentos feitos pela prefeitura dos municípios do ICE
-  + Acessar site do [Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (Siconfi)](https://siconfi.tesouro.gov.br/siconfi/index.jsf) e acessar “contas anuais” na seção “consultar finbra” em “consultas”;
+  + Acessar site do [Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (Siconfi) e acessar “contas anuais” na seção “consultar finbra” em “consultas”;
   + Selecionar como “”exercício” o ano de 2020, ano mais recente disponível, como “escopo” selecionar Município, e selecionar a tabela “Despesas Orçamentárias (Anexo I-D)”;
   + Observações: na data em de acesso à tabela (26/08/2021), ainda faltavam dados de Belém (PA). Foi escolhido manter os dados de 2020 uma vez que o documento “Produto 3v3” sugere selecionar o ano anterior somente quando os dados faltantes do ano mais recente forem “muitos”.
   + Os dados de Brasília foram coletados à parte utilizando como escopo “Estados/DF” na seleção de tabela no site da Siconfi, já que, para os dados de despesas orçamentárias, Brasília é tratada como um estado e não um município;
