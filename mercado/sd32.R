@@ -63,11 +63,11 @@ df <- vinculos %>%
   select(id_municipio, sigla_uf, nome, everything()) %>%
   mutate(m_p = media / pequena,
          g_m = grande / media,
-         i322 = m_p / g_m) %>%
+         i322 = g_m / m_p) %>%
   arrange(-i322)
 
-write_excel_csv(df, "mercado/sd32_prop_empresas_completo.xlsx")
+write_csv(df, "mercado/sd32_prop_empresas_completo.csv")
 
 df %>% 
   select(1:3,9) %>% 
-  write_excel_csv("dados_finais/sd32_prop_empresas.xlsx")
+  write_csv("dados_finais/sd32_prop_empresas.csv")
