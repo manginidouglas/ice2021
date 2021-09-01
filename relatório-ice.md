@@ -75,6 +75,18 @@ Table: Determinantes, subdeterminantes e indicadores com compõem o ICE 2021 com
 |d7 Cultura              |sd72 Instituições                                  |i723 Pesquisas por SIMPLES Nacional                                   |
 |d7 Cultura              |sd72 Instituições                                  |i724 Pesquisas por Senac                                              |
 
+Os trabalhos foram guiados principalmente pelo relatório final do ICE 2020 (disponível neste [link](https://drive.google.com/drive/u/1/folders/1uNwTvmKw0HNvWDWffLtCsPzE5n7-I_a7)) e pelo documento “Produto 3v3.docx”, fornecido pelo orientador, Prof. Arnaldo Mauerberg, que contém a proposta definitiva de metodologia do Índice de Cidades Empreendedoras. É importante frisar, contudo, que esta versão do ICE contém mudanças com relação à versão de 2020. São elas:
+
+* O determinante Cultura foi reformulado, sendo composto nesta edição pelos seguintes subdeterminantes indicadores:
+  + Subdeterminante Iniciativa: busca medir o grau de confiança e intenção em empreender dentro do município. É composto por dois indicadores
+    + Indicador Pesquisas pelo Termo Empreendedor (i711);
+    + Indicador Pesquisas pelo Termo MEI (i712);
+  + Subdeterminante Instituições: busca  medir a cultura empreendedora local. É composto pelos seguintes indicadores:
+    + Indicador Pesquisas pelo Termo Sebrae (i721);
+    + Indicador Pesquisas pelo Termo Franquia (i722);
+    + Indicador Pesquisas pelo Termo SIMPLES Nacional (i723);
+    + Indicador Pesquisas pelo Termo Senac (i724)
+
 O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
 Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municípios.    
 
@@ -163,7 +175,7 @@ Período: 2018
 Comentário: Não há novos dados desde a última edição do ICE, então usamos os valores passados. 
 
 
-## Complexidade burocrática {#sd13}
+## Subdeterminante Complexidade burocrática {#sd13}
 
 clique [aqui](#sd13_script) para ver o script
 
