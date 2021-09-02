@@ -753,6 +753,83 @@ Ver [Indicador Pesquisas com Termo "Empreendedor"](#i711), que apresenta o proce
 
 \newpage
 
+# Análise de Componentes Principais 
+
+## Padronização {#pad}
+
+Os 49 indicadores são medidos em diferentes escalas: reais, anos, metros. A fim de impedir que a unidade de medida influencie o resultado, fizemos transformações estatísticas que alteram os valores dos indicadores mas não a posição relativa no ranking.  
+
+De cada indicador subtraímos sua média e dividimos pelo desvio padrão populacional. Assim, todos os indicadores terão valor entre zero e um. Em seguida, somamos os indicadores de cada sub-determinante. Padronizamos novamente cada sub-determinante, dessa vez somando 6 ao resultado. Somamos todos os sub-determinante de cada determinante. Padronizamos os determinantes uma última vez, repetindo a fórmula anterior. Se $X$ é o determinante, sua versão padronizada será 
+
+$$\frac{X - \text{média(X)}}{\text{desvio padrao populacional (X)}}$$
+Clique [aqui](#pad_script) para ver o código em Stata que faz essas padronizações.  
+
+## Análise de Componentes Principais {#pca}  
+
+Clique [aqui](#pca) para ver o código Stata desta seção.  
+
+A análise de componentes principais (pca) é feita no Stata através do comando factor [variáveis], pcf, em que as variáveis são os determinantes padronizados (d1_linha, ..., d7_linha). Geramos sete fatores, cujos autovalores (eigenvalues no Stata) mostram o quanto de variância é explicada por cada fator. Selecionamos tantos fatores quanto for necessário para explicar ao menos 70% da variância. Neste caso, usamos os três primeiros (Figura 1).
+
+```{r f1_eigenvalues, echo=FALSE, eval = TRUE, fig.cap=" Fatores", out.width = '100%' }
+
+knitr::include_graphics("pca/factor_analysis.png")
+```
+
+As cargas fatoriais geradas pelo comando factor (Figura 2) apresentam as correlações entre as variáveis originais e os fatores. Assim, quanto maior o valor absoluto carga fatorial, maior será a correlação com o fator. Valores negativos representam impacto inverso no fator.
+
+```{r f2_cargas, echo=FALSE, eval = TRUE, fig.cap=" Cargas Fatoriais", out.width = '100%' }
+
+knitr::include_graphics("pca/factor_loadings.png")
+```
+
+
+Em seguida, é feito o processo de rotação fatorial com o comando *rotate*. Trata-se de um ajuste aos eixos fatoriais para facilitar a  sua interpretação. Os dois primeiros quadros (Figuras 4 e 5) gerados por este comando no Stata têm interpretação similar à dada acima. Já o terceiro quadro (Figura 6) mostra uma matriz de correlação entre os fatores relevantes.
+
+
+```{r f3_fatores_r, echo=FALSE, eval = TRUE, fig.cap=" fatores após rotação", out.width = '100%' }
+
+knitr::include_graphics("pca/factor_analysis_rotate.png")
+```
+
+```{r f4_cargas_r, echo=FALSE, eval = TRUE, fig.cap=" cargas após rotação", out.width = '100%' }
+
+knitr::include_graphics("pca/factor_loadings_rotate.png")
+```
+
+```{r f5_rotation_matrix, echo=FALSE, eval = TRUE, fig.cap=" Matriz de rotação", out.width = '100%' }
+
+knitr::include_graphics("pca/factor_rotation_matrix.png")
+```
+
+
+Testamos se a nossa amostra é adequada com um teste de Kaiser-Meyer-Olklin (KMO). Valores mais altos, entre zero e um, representam uma melhor adequação da amostra.  
+
+```{r f6_kmo, echo=FALSE, eval = TRUE, fig.cap=" Teste KMO", out.width = '100%' }
+
+knitr::include_graphics("pca/kmo.png")
+```
+
+
+Em sequência, calculamos os scores para os fatores para cada cidade através do comando predict ice1 ice2, ice3, score, em que ice{i} corresponde ao i-ésimo fator.  Os scores são calculados usando as cargas fatoriais como base para o cálculo de coeficientes de uma regressão padrão. Vejamos o coeficiente:
+
+$$\hat{\beta}_{1}=\frac{\sum\left(X_{i}-\bar{X}\right)\left(Y_{i}-\bar{Y}\right)}{\sum\left(X_{i}-\bar{X}\right)^{2}}$$
+O numerador é representado pela covariância entre a variável independente e a dependente, que pode ser obtido pela carga fatorial. O denominador é dado pela variância do indicador, que é calculada pelo Stata. É possível calcular o valor dos scores multiplicando o valor dos determinantes padronizados (d1_linha, ..., d7_linha) pelo coeficiente de regressão que o Stata calcula. Isto é feito pelo comando predict ice1 ice2,ice3, score.  
+
+Como resultado, são criadas três colunas (ice1, ice2 e ice3) contendo, para cada cidade, os scores para os fatores 1, 2 e 3. O Stata calcula estes scores de modo a cada um destes ter média zero e desvio padrão um.  
+
+Por fim, é criado o índice (variável ice), que soma os scores para os três fatores gerados pela análise fatorial. O último passo é padronizar a soma (ver [padronização](#pad)) Assim, o Índice de Cidades Empreendedoras 2021 é gerado pela variável ice_final. O comando gsort -ice_final deixa as observações em ordem decrescente.
+
+
+
+
+
+
+
+
+
+
+
+
 # Apêndice {#apend}
 
 ### maiores municípios {#municode}
@@ -765,6 +842,7 @@ voltar para [introdução](#intro)
 \newpage 
 
 
+<<<<<<< HEAD
 ### maiores municípios {#top100_mun_cod}
 voltar para [introdução](#intro)
 
@@ -828,6 +906,8 @@ top100_mun_cod <- top100_mun20 %>%
 write.csv(top100_mun_cod, "top100_mun_cod.csv", row.names = FALSE)
 ```
 
+=======
+>>>>>>> 81ec7a50f58b9c6a85616ae4064d84df6c09046f
 ### Script sd11 {#sd11_script}
 
 voltar para [Tempo de Processos](#sd11)
@@ -3005,3 +3085,211 @@ write.csv(i723, "i723.csv", row.names = FALSE)
 write.csv(i724, "i724.csv", row.names = FALSE)  
 
 ```
+<<<<<<< HEAD
+=======
+## Script i323 {#i323_script}
+Este script em R refere-se aos [Indicador Compras Públicas (i323)](#i323)
+```{r i323, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Compras Publicas (i323)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# ------------------------------------------------------------------
+# PASSO 1: obter despesas e investimentos das prefeituras
+# ------------------------------------------------------------------
+
+# importar planilha com dados de despesas orcamentarias dos municipios
+despesas <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                      d3 Mercado/sd32/i323/finbra.csv', skip = 3)  
+  
+despesas_mun <- despesas %>% 
+  select(id_municipio = 'Cod.IBGE',
+         sigla_uf = UF,
+         Conta,
+         Valor) %>%
+  filter(Conta == '3.0.00.00.00 - Despesas Correntes' | 
+           Conta == '4.4.00.00.00 - Investimentos') %>%
+  group_by(id_municipio, sigla_uf) %>%
+  summarise(desp_inv = sum(Valor)) %>%
+  transform(id_municipio = as.character(id_municipio)) %>%
+  inner_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf')) %>%
+  replace_na(list(desp_inv = 0))
+  
+# importar planilha com dados de brasilia
+despesas_df <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                         d3 Mercado/sd32/i323/finbra-df.csv', skip = 3)  
+
+despesas_df <- despesas_df %>% 
+  select(id_estado = 'Cod.IBGE',
+         sigla_uf = UF,
+         Conta,
+         Valor) %>%
+  filter(Conta == '3.0.00.00.00 - Despesas Correntes' |
+           Conta == '4.4.00.00.00 - Investimentos',
+         sigla_uf == 'DF') %>%
+  group_by(sigla_uf) %>%
+  summarise(desp_inv = sum(Valor)) 
+
+despesas_ice <- bind_rows(despesas_df, despesas_mun)
+despesas_ice[1,3] = '5300108'
+despesas_ice[1,4] = 'Brasília'
+
+despesas_ice <- despesas_ice %>%
+  right_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf', 'nome')) %>%
+  replace_na(list(desp_inv = 0)) %>%
+  select(id_municipio, nome, sigla_uf, desp_inv) %>%
+  arrange(desc(desp_inv))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter numero de empresas com pelo menos 1 funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+# obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: juntar tabelas e calcular indicador
+# ------------------------------------------------------------------
+
+i323 <- despesas_ice %>%
+  inner_join(temvinculo, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i323 = desp_inv/n_empresas,
+         i323_pad = (i323 - mean(i323))/sdp(i323)) %>%
+  select(id_municipio, nome, sigla_uf, i323, i323_pad) %>%
+  arrange(desc(i323_pad))
+  
+# exportar indicador
+write.csv(i323, "i323.csv", row.names = FALSE)
+```
+
+
+
+## Padronização {#pad_script}
+
+Voltar para [Padronização](#pad)
+
+```{r pad}
+*** ICE 2020 ***
+
+*** Análise Fatorial ***
+
+clear
+log using "C:\Users\User\OneDrive\Documentos\ICE 2021", replace 
+set more off
+cd "C:\Users\User\OneDrive\Documentos\ICE 2021"
+pwd
+
+import excel "C:\Users\User\OneDrive\Documentos\ICE 2021\Análise Fatorial\indicadores.xlsx", firstrow
+
+**Padronização
+
+gen N = _N
+foreach var of varlist i111 i112 i113 i121 i122 i123 i124 i131 i132 i133 i211 i212 i213 i221 i222 i223 i224 i311 i312 i313 i321 i322 i323 i411 i412 i413 i511 i512 i513 i514 i515 i521 i522 i523 i524 i611 i612 i613 i614 i615 i621 i622 i623 i711 i712 i721 i722 i723 i724 {
+egen `var'_media= mean(`var')
+egen `var'_dp= sd(`var')
+gen `var'_dpp= `var'_dp *sqrt((N-1)/N)
+gen `var'_linha= (`var' - `var'_media)/ `var'_dpp
+drop `var'_media `var'_dp `var'_dpp
+}
+
+gen s11=i111_linha+i112_linha+i113_linha
+gen s12=i121_linha+i122_linha+i123_linha+i124_linha
+gen s13=i131_linha+i132_linha+i133_linha
+gen s21=i211_linha+i212_linha+i213_linha
+gen s22=i221_linha+i222_linha+i223_linha+i224_linha
+gen s31=i311_linha+i312_linha+i313_linha
+gen s32=i321_linha+i322_linha+i323_linha
+gen s41=i411_linha+i412_linha+i413_linha
+gen s51=i511_linha+i512_linha+i513_linha+i514_linha+i515_linha
+gen s52=i521_linha+i522_linha+i523_linha+i524_linha
+gen s61=i611_linha+i612_linha+i613_linha+i614_linha+i615_linha
+gen s62=i621_linha+i622_linha+i623_linha
+gen s71=i711_linha+i712_linha
+gen s72=i721_linha+i722_linha+i723_linha+i724_linha
+
+foreach var of varlist s11 s12 s13 s21 s22 s31 s32 s41 s51 s52 s61 s62 s71 s72{
+egen `var'_media= mean(`var')
+egen `var'_dp= sd(`var')
+gen `var'_dpp= `var'_dp *sqrt((N-1)/N)
+gen `var'_linha= ((`var' - `var'_media)/ `var'_dpp) + 6
+drop `var'_media `var'_dp `var'_dpp
+}
+
+gen d1=s11_linha+s12_linha+s13_linha
+gen d2=s21_linha+s22_linha
+gen d3=s31_linha+s32_linha
+gen d4=s41_linha
+gen d5=s51_linha+s52_linha
+gen d6=s61_linha+s62_linha
+gen d7=s71_linha+s72_linha
+
+foreach var of varlist d1 d2 d3 d4 d5 d6 d7 {
+egen `var'_media= mean(`var')
+egen `var'_dp= sd(`var')
+gen `var'_dpp= `var'_dp *sqrt((N-1)/N)
+gen `var'_linha= ((`var' - `var'_media)/ `var'_dpp) + 6
+drop `var'_media `var'_dp `var'_dpp
+}
+
+```
+
+
+## Análise de Componentes Principais {#pca_script}
+
+Voltar para [Análise de Componentes Principais](#pca)
+
+```{r pca}
+
+**Análise fatorial
+
+factor d1_linha d2_linha d3_linha d4_linha d5_linha d6_linha d7_linha, pcf mineigen(0.6)
+
+rotate
+
+predict ice1 ice2 ice3
+
+estat kmo
+
+gen ice = ice1 + ice2 + ice3
+egen ice_media= mean(ice)
+egen ice_dp= sd(ice)
+gen ice_dpp= ice_dp *sqrt((N-1)/N)
+gen ice_final= ((ice - ice_media)/ ice_dpp) + 6
+drop ice_media ice_dp ice_dpp
+gsort -ice_final
+
+```
+
+>>>>>>> 81ec7a50f58b9c6a85616ae4064d84df6c09046f
