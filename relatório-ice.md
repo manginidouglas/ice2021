@@ -1,7 +1,7 @@
 ---
 title: "Relatório Final ICE 2021"
 author: "Douglas Moreira Mangini e Pedro Henrique Borges da Silva"
-date: "18/08/2021"
+date: "02/09/2021"
 output: 
   pdf_document:
     keep_md: yes
@@ -98,6 +98,7 @@ Os indicadores foram calculados de maneira paralela pelos bolsistas. Alguns scri
 
 
 
+
 # Determinante Ambiente regulatório {#d1}
 
 ## Subdeterminante Tempo de processos {#sd11}
@@ -132,8 +133,6 @@ Período: 2020
 
 Comentário: Usamos os parâmetros de pesquisa: justiça = Justiça Estadual, campos agrupados = Sede Município e tipo de variável = novos, pendentes e baixados. A taxa líquida de congestionamento é definida^[https://www.cnj.jus.br/gestao-estrategica-e-planejamento/estrategia-nacional-do-poder-judiciario-2009-2014/indicadores/03-taxa-de-congestionamento/
 ] como $$1 - \frac{\text{baixados}}{\text{novos + pendentes}}$$. O indicador é o inverso da taxa de congestionamento.  
-
-
 
 ## Subdeterminante Tributação {#sd12}
 
@@ -211,6 +210,7 @@ Comentário: quantidade de anos desde que o município mudou a lei de zoneamento
 \newpage
 
 
+
 # Determinante Infraestrutura {#d2}
 
 ## Subdeterminante Transporte Interurbano {#sd21}
@@ -258,8 +258,6 @@ Comentário: Distância do porto mais próximo ao município. Consideramos apena
 \end{figure}
 
 
-
-
 ## Subdeterminante Condições Urbanas {#sd22}
 
 clique [aqui](#sd22_script) para ver o script
@@ -300,6 +298,7 @@ Período: 2019
 Comentário: mortes causadas por agressão, ponderado pelo número estimado de habitantes em 2020. No site do datasus, selecionamos Conteúdo igual a *Óbitos p/ Ocorrência* e Grupo CID-10 igual a *agressões*. Os dados em formato excel estão na pasta de arquivos e o [script](#infra) em R para reproduzir o cálculo no apêndice deste documento. 
 
 \newpage
+ 
  
  
 # Determinante Mercados {#d3}
@@ -371,7 +370,9 @@ Este indicador refere-se ao total de despesas e investimentos feitos pela prefei
 O tratamento das bases de dados e o cálculo do índice foram feitos usando o R. O script encontra-se no [Apêndice](#i323_script) deste relatório. O script e os arquivos de dados com resultados dos cálculos estão disponíveis no drive do projeto.
 
 
+
 # Determinante Acesso a Capital {#d4}
+
 ## Subdeterminante Capital Disponível {#sd41}
 ### Indicador Operações de Crédito por Município (i411) {#i411}
 
@@ -561,6 +562,7 @@ O tratamento das bases de dados e o cálculo do índice foram feitos usando o R.
 
 
 \newpage
+
 # Determinante Capital Humano {#d6}
 ## Subdeterminante Acesso e Qualidade da Mão de Obra Básica {#sd61}
 
@@ -678,6 +680,7 @@ O tratamento dos dados e cálculo do índice foram feitos no R. O script encontr
 
 
 \newpage
+
 # Determinante Cultura {#d7}
 ## Subdeterminante Iniciativa
 ### Indicador Pesquisas com o Termo “Empreendedor” (i711) {#i711}
@@ -726,9 +729,10 @@ De cada indicador subtraímos sua média e dividimos pelo desvio padrão populac
 $$\frac{X - \text{média(X)}}{\text{desvio padrao populacional (X)}}$$
 Clique [aqui](#pad_script) para ver o código em Stata que faz essas padronizações.  
 
+
 ## Análise de Componentes Principais {#pca}  
 
-Clique [aqui](#pca) para ver o código Stata desta seção.  
+Clique [aqui](#pca_script) para ver o código Stata desta seção.  
 
 A análise de componentes principais (pca) é feita no Stata através do comando factor [variáveis], pcf, em que as variáveis são os determinantes padronizados (d1_linha, ..., d7_linha). Geramos sete fatores, cujos autovalores (eigenvalues no Stata) mostram o quanto de variância é explicada por cada fator. Selecionamos tantos fatores quanto for necessário para explicar ao menos 70% da variância. Neste caso, usamos os três primeiros (Figura 1).
 
@@ -774,16 +778,6 @@ O numerador é representado pela covariância entre a variável independente e a
 Como resultado, são criadas três colunas (ice1, ice2 e ice3) contendo, para cada cidade, os scores para os fatores 1, 2 e 3. O Stata calcula estes scores de modo a cada um destes ter média zero e desvio padrão um.  
 
 Por fim, é criado o índice (variável ice), que soma os scores para os três fatores gerados pela análise fatorial. O último passo é padronizar a soma (ver [padronização](#pad)) Assim, o Índice de Cidades Empreendedoras 2021 é gerado pela variável ice_final. O comando gsort -ice_final deixa as observações em ordem decrescente.
-
-
-
-
-
-
-
-
-
-
 
 
 # Apêndice {#apend}
@@ -844,7 +838,6 @@ write_csv(municode,"municode.csv")
 \newpage 
 
 
-<<<<<<< HEAD
 ### maiores municípios {#top100_mun_cod}
 voltar para [introdução](#intro)
 
@@ -909,9 +902,6 @@ top100_mun_cod <- top100_mun20 %>%
 write.csv(top100_mun_cod, "top100_mun_cod.csv", row.names = FALSE)
 ```
 
-=======
->>>>>>> 81ec7a50f58b9c6a85616ae4064d84df6c09046f
-### Script sd11 {#sd11_script}
 
 voltar para [Tempo de Processos](#sd11)
 
@@ -2173,9 +2163,9 @@ df %>%
 
 
 
-
 ## Script i323 {#i323_script}
 Este script em R refere-se aos [Indicador Compras Públicas (i323)](#i323)
+
 
 ```r
 library(readxl)
@@ -2286,6 +2276,7 @@ write.csv(i323, "i323.csv", row.names = FALSE)
 ## Script i411 {#i411_script} 
 Este scrip em R refere-se ao [Indicador Operações de Crédito por Município (i411)](#i411)
 
+
 ```r
 library(readxl)
 library(tidyverse)
@@ -2369,6 +2360,7 @@ write.csv(i411, "i411.csv", row.names = FALSE)
 ## Script i412 {#i412_script}
 Este scrip em R refere-se ao [Indicador Proporção Relativa de Capital de Risco (i412)](#i412)
 
+
 ```r
 library(readxl)
 library(tidyverse)
@@ -2444,6 +2436,7 @@ write.csv(i412, "i412.csv", row.names = FALSE)
 
 ## Script i413 {#i413_script}
 Este scrip em R refere-se ao [Indicador Capital Poupado per capita (i413)](#i413)
+
 
 ```r
 library(readxl)
@@ -2531,6 +2524,7 @@ write.csv(i413, "i413.csv", row.names = FALSE)
 
 ## Script i511 {#i511_script}
 Este script em R refere-se ao [Indicador Proporção de Mestres e Doutores em C\&T (i511)](#i511)
+
 
 ```r
 library(readxl)
@@ -2640,6 +2634,7 @@ write.csv(i511, "i511.csv", row.names = FALSE)
 
 ## Script i512 {#i512_script}
 Este script em R refere-se ao [Indicador Proporção de Funcionários em C\&T (i512)](#i512)
+
 
 ```r
 library(readxl)
@@ -2785,6 +2780,7 @@ write.csv(i512, "i512.csv", row.names = FALSE)
 ## Script i513 {#i513_script}
 Este script em R refere-se ao [Indicador Média de Investimentos do BNDES e da FINEP (i513)](#i513)
 
+
 ```r
 library(readxl)
 library(tidyverse)
@@ -2908,6 +2904,7 @@ write.csv(i513, "i513.csv", row.names = FALSE)
 ## Script i514 {#i514_script}
 Este script em R refere-se ao [Indicador Infraestrutura Tecnológica (i514)](#i514)
 
+
 ```r
 library(readxl)
 library(tidyverse)
@@ -2947,6 +2944,7 @@ write.csv(i514, "i514.csv", row.names = FALSE)
 
 ## Script i515 {#i515_script}
 Este script em R refere-se ao [Indicador Contratos de Concessão (i515)](#i515)
+
 
 ```r
 library(readxl)
@@ -2995,6 +2993,7 @@ write.csv(i515, "i515.csv", row.names = FALSE)
 
 ## Script i521 {#i521_script}
 Este script em R refere-se ao [Indicador Patentes (i521)](#i521)
+
 
 ```r
 library(readxl)
@@ -3109,6 +3108,7 @@ write.csv(i521, "i521.csv", row.names = FALSE)
 ## Script i522 {#i522_script}
 Este script em R refere-se ao [Indicador Tamanho da Indústria Inovadora (i522)](#i522)
 
+
 ```r
 library(readxl)
 library(tidyverse)
@@ -3218,6 +3218,7 @@ write.csv(i522, "i522.csv", row.names = FALSE)
 
 ## Script i523 {#i523_script}
 Este script em R refere-se ao [Indicador Tamanho da Economia Criativa (i523)](#i523)
+
 
 ```r
 library(readxl)
@@ -3331,6 +3332,7 @@ write.csv(i523, "i523.csv", row.names = FALSE)
 ## Script i524 {#i524_script}
 Este script em R refere-se ao [Indicador Tamanho das Empresas TIC (i514)](#i524)
 
+
 ```r
 library(readxl)
 library(tidyverse)
@@ -3442,6 +3444,7 @@ write.csv(i524, "i524.csv", row.names = FALSE)
 ## Script i611 {#i611_script}
 Este script em R refere-se ao [Indicador Nota do Ideb (i611)](#i611)
 
+
 ```r
 library(tidyverse)
 library("basedosdados")
@@ -3500,6 +3503,7 @@ write.csv(i611, "i611.csv", row.names = FALSE)
 
 ## Script i612 {#i612_script}
 Este script em R refere-se ao [Indicador Proporção de adultos com pelo menos o Ensino Médio completo (i612)](#i612)
+
 
 ```r
 library(tidyverse)
@@ -3608,6 +3612,7 @@ write.csv(i612, "i612.csv", row.names = FALSE)
 
 ## Script i613 {#i613_script}
 Este script em R refere-se ao [Indicador Taxa Líquida de Matrícula no Ensino Médio (i613)](#i613)
+
 
 ```r
 library(tidyverse)
@@ -3735,6 +3740,7 @@ write.csv(i613, "i613.csv", row.names = FALSE)
 ## Script i614 {#i614_script}
 Este script em R refere-se ao [Indicador Nota média no ENEM (i614)](#i614)
 
+
 ```r
 library(tidyverse)
 
@@ -3833,6 +3839,7 @@ write.csv(i614, "i614.csv", row.names = FALSE)
 
 ## Script i615 {#i615_script}
 Este script em R refere-se ao [Indicador Proporção de Matriculados no Ensino Técnico e Profissionalizante (i615)](#i615)
+
 
 ```r
 library(tidyverse)
@@ -3958,6 +3965,7 @@ write.csv(i615, "i615.csv", row.names = FALSE)
 ## Script i621 {#i621_script}
 Este script em R refere-se ao [Indicador Proporção de Adultos com pelo Menos Ensino Superior Completo (i621)](#i621)
 
+
 ```r
 library(tidyverse)
 
@@ -4072,11 +4080,9 @@ write.csv(i621, "i621.csv", row.names = FALSE)
 ```
 
 
-
-
-
 ## Script i622 {#i622_script}
 Este script em R refere-se ao [Indicador Proporção de Alunos Concluintes em Cursos de Alta Qualidade (i622)](#i622)
+
 
 ```r
 library(data.table)
@@ -4158,9 +4164,9 @@ write.csv(i622, "i622.csv", row.names = FALSE)
 ```
 
 
-
 ## Script d7 {#d7_script}
 Este script em R refere-se aos [Indicadores do determinante Cultura (d7)](#d7)
+
 
 ```r
 library(tidyverse)
@@ -4302,116 +4308,6 @@ write.csv(i722, "i722.csv", row.names = FALSE)
 write.csv(i723, "i723.csv", row.names = FALSE)
 write.csv(i724, "i724.csv", row.names = FALSE)  
 ```
-<<<<<<< HEAD
-=======
-## Script i323 {#i323_script}
-Este script em R refere-se aos [Indicador Compras Públicas (i323)](#i323)
-
-```r
-library(readxl)
-library(tidyverse)
-library("basedosdados")
-
-# Indicador Compras Publicas (i323)
-
-# ------------------------------------------------------------------
-# PASSO 0: preliminares
-# ------------------------------------------------------------------
-
-# definimos uma funcao para desvio padrao populacional
-sdp <- function(x) {
-  sd(x)*(sqrt((length(x)-1)/length(x)))
-}
-
-# importamos tabela com dados dos municipios mais populosos
-top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
-top100_mun_cod <- top100_mun_cod %>% 
-  transform(id_municipio = as.character(id_municipio))
-
-# Definir projeto no Google Cloud
-set_billing_id("workshop-teste-322616")
-
-# ------------------------------------------------------------------
-# PASSO 1: obter despesas e investimentos das prefeituras
-# ------------------------------------------------------------------
-
-# importar planilha com dados de despesas orcamentarias dos municipios
-despesas <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
-                      d3 Mercado/sd32/i323/finbra.csv', skip = 3)  
-  
-despesas_mun <- despesas %>% 
-  select(id_municipio = 'Cod.IBGE',
-         sigla_uf = UF,
-         Conta,
-         Valor) %>%
-  filter(Conta == '3.0.00.00.00 - Despesas Correntes' | 
-           Conta == '4.4.00.00.00 - Investimentos') %>%
-  group_by(id_municipio, sigla_uf) %>%
-  summarise(desp_inv = sum(Valor)) %>%
-  transform(id_municipio = as.character(id_municipio)) %>%
-  inner_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf')) %>%
-  replace_na(list(desp_inv = 0))
-  
-# importar planilha com dados de brasilia
-despesas_df <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
-                         d3 Mercado/sd32/i323/finbra-df.csv', skip = 3)  
-
-despesas_df <- despesas_df %>% 
-  select(id_estado = 'Cod.IBGE',
-         sigla_uf = UF,
-         Conta,
-         Valor) %>%
-  filter(Conta == '3.0.00.00.00 - Despesas Correntes' |
-           Conta == '4.4.00.00.00 - Investimentos',
-         sigla_uf == 'DF') %>%
-  group_by(sigla_uf) %>%
-  summarise(desp_inv = sum(Valor)) 
-
-despesas_ice <- bind_rows(despesas_df, despesas_mun)
-despesas_ice[1,3] = '5300108'
-despesas_ice[1,4] = 'Brasília'
-
-despesas_ice <- despesas_ice %>%
-  right_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf', 'nome')) %>%
-  replace_na(list(desp_inv = 0)) %>%
-  select(id_municipio, nome, sigla_uf, desp_inv) %>%
-  arrange(desc(desp_inv))
-
-# ------------------------------------------------------------------
-# PASSO 2: obter numero de empresas com pelo menos 1 funcionario
-# ------------------------------------------------------------------
-
-# acessar RAIS estabelecimento pelo Base dos Dados
-# obter numero de empresas com pelo menos um funcionario em cada municipio
-vinculos <- basedosdados::read_sql(
-  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
-  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
-  WHERE ano = 2019", 
-  page_size = 300000)
-
-temvinculo <- vinculos %>% 
-  filter(qtde_vinculos_ativos != 0) %>%
-  group_by(id_municipio) %>%
-  summarise(n_empresas = n()) %>%
-  right_join(top100_mun_cod, by = "id_municipio") %>%
-  select(id_municipio, nome, sigla_uf,n_empresas) %>%
-  arrange(desc(n_empresas))
-
-# ------------------------------------------------------------------
-# PASSO 3: juntar tabelas e calcular indicador
-# ------------------------------------------------------------------
-
-i323 <- despesas_ice %>%
-  inner_join(temvinculo, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
-  mutate(i323 = desp_inv/n_empresas,
-         i323_pad = (i323 - mean(i323))/sdp(i323)) %>%
-  select(id_municipio, nome, sigla_uf, i323, i323_pad) %>%
-  arrange(desc(i323_pad))
-  
-# exportar indicador
-write.csv(i323, "i323.csv", row.names = FALSE)
-```
-
 
 
 ## Padronização {#pad_script}
@@ -4509,4 +4405,3 @@ drop ice_media ice_dp ice_dpp
 gsort -ice_final
 ```
 
->>>>>>> 81ec7a50f58b9c6a85616ae4064d84df6c09046f
