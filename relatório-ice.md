@@ -77,7 +77,7 @@ Table: Determinantes, subdeterminantes e indicadores com compõem o ICE 2021 com
 
 Os trabalhos foram guiados principalmente pelo relatório final do ICE 2020 (disponível neste [link](https://drive.google.com/drive/u/1/folders/1uNwTvmKw0HNvWDWffLtCsPzE5n7-I_a7)) e pelo documento “Produto 3v3.docx”, fornecido pelo orientador, Prof. Arnaldo Mauerberg, que contém a proposta definitiva de metodologia do Índice de Cidades Empreendedoras. É importante frisar, contudo, que esta versão do ICE contém mudanças com relação à versão de 2020. São elas:
 
-* O determinante Cultura foi reformulado, sendo composto nesta edição pelos seguintes subdeterminantes indicadores:
+* O determinante Cultura foi reformulado, sendo composto nesta edição pelos seguintes subdeterminantes e indicadores:
   + Subdeterminante Iniciativa: busca medir o grau de confiança e intenção em empreender dentro do município. É composto por dois indicadores
     + Indicador Pesquisas pelo Termo Empreendedor (i711);
     + Indicador Pesquisas pelo Termo MEI (i712);
@@ -86,6 +86,12 @@ Os trabalhos foram guiados principalmente pelo relatório final do ICE 2020 (dis
     + Indicador Pesquisas pelo Termo Franquia (i722);
     + Indicador Pesquisas pelo Termo SIMPLES Nacional (i723);
     + Indicador Pesquisas pelo Termo Senac (i724)
+A mudança no determinante Cultura se deve a suspensão das pesquisas Mind Miners que o compunham;
+* O índice passa a incluir, além dos 100 municípios mais populosos do Brasil, os municípios da edição anterior que eventualmente tenho saído do ranking. Em 2021, o município de Santa Maria (RS) saiu e Marabá (PA) entrou no ranking. O ICE 2021, portanto, contará com 101 municípios.
+
+Nesta edição, a manipulação das bases de dados e o cálculo dos indicadores foram feitos exclusivamente no R. Os scripts estão disponíveis no [Apêndice](#apend) deste relatório. Além disso, todos arquivos de dados e scripts estão disponíveis no drive do projeto, disponível neste [link](https://1drv.ms/u/s!AqMHjJQ8NQwSgcFH6a7-tqbNjUz-LA?e=XJhGL2). Por fim, os códigos em R também estão disponíveis em repositório [GitHub](https://github.com/manginidouglas/ice2021).
+
+Os indicadores foram calculados de maneira paralela pelos bolsistas. Alguns scripts fazem referência a um dataframe chamado "municode", enquanto outros se referem a "top100_mun_cod". Ambos possuem as mesmas informações 
 
 O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
 Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municípios.    
@@ -712,7 +718,7 @@ Ver [Indicador Pesquisas com Termo "Empreendedor"](#i711), que apresenta o proce
 
 \newpage
 
-# Apêndice {-}
+# Apêndice {#apend}
 
 ### maiores municípios {#municode}
 
