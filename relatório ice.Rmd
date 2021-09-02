@@ -7,6 +7,7 @@ output:
     keep_md: yes
     toc: TRUE
     number_sections: TRUE
+urlcolor: blue
 ---
 
 ```{r setup, include=FALSE}
@@ -126,11 +127,7 @@ A mudança no determinante Cultura se deve a suspensão das pesquisas Mind Miner
 
 Nesta edição, a manipulação das bases de dados e o cálculo dos indicadores foram feitos exclusivamente no R. Os scripts estão disponíveis no [Apêndice](#apend) deste relatório. Além disso, todos arquivos de dados e scripts estão disponíveis no drive do projeto, disponível neste [link](https://1drv.ms/u/s!AqMHjJQ8NQwSgcFH6a7-tqbNjUz-LA?e=XJhGL2). Por fim, os códigos em R também estão disponíveis em repositório [GitHub](https://github.com/manginidouglas/ice2021).
 
-Os indicadores foram calculados de maneira paralela pelos bolsistas. Alguns scripts fazem referência a um dataframe chamado "municode", enquanto outros se referem a "top100_mun_cod". Ambos possuem as mesmas informações 
-
-O script *municode* (clique [aqui](#municode)) fabrica uma planilha em que estão os maiores municípios do Brasil, seus códigos ibge e população estimada^[<https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html?edicao=28674&t=resultados>]. Esta planilha será carregada em todos os códigos que seguem.  
-Os dados de 2021 mostram que Santa Maria - RS foi substituida na lista dos 100 maiores municípios por Marabá - PA, então nesta edição trabalhamos com 101 municípios.    
-
+Os indicadores foram calculados de maneira paralela pelos bolsistas. Alguns scripts fazem referência a um dataframe chamado `municode`, enquanto outros se referem a `top100_mun_cod`. Ambos possuem a mesma informação: a lista dos 101 municípios que compõem o ICE. Os scripts que geram esses dataframes estão disponíveis no [Apêndice](municode). 
 
 \newpage
 
@@ -767,6 +764,70 @@ voltar para [introdução](#intro)
 
 \newpage 
 
+
+### maiores municípios {#top100_mun_cod}
+voltar para [introdução](#intro)
+
+```{r top100_mun, echo = TRUE, eval = FALSE}
+library(tidyverse)
+library("basedosdados")
+library(readxl)
+
+# Ranking de 100 municipios mais populosos
+
+# ------------------------------------------------------------------
+# PASSO 0: definir projeto no google cloud
+# ------------------------------------------------------------------
+
+# definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# baixar tabela com codigos e nomes de municipios
+query <- "SELECT * FROM `basedosdados.br_bd_diretorios_brasil.municipio`"
+cod_mun <- read_sql(query)
+
+# ------------------------------------------------------------------
+# PASSO 1: obter ranking de populacao de 2020
+# ------------------------------------------------------------------
+
+# baixar dados de populacao de 2020 
+query <- "SELECT * FROM `basedosdados.br_ibge_populacao.municipio` 
+WHERE ano = 2020"
+pop_mun20 <- read_sql(query)
+
+# rankear municipios por populacao (maior para menor)
+top100_mun20 <- pop_mun20 %>%
+  top_n(100, populacao) %>%
+  inner_join(cod_mun, by = 'id_municipio') %>% 
+  select(nome, sigla_uf,  populacao)
+
+# ------------------------------------------------------------------
+# PASSO 2: obter ranking de populacao de 2021
+# ------------------------------------------------------------------
+
+# importar tabela com estimatica populacional de 2021
+# algumas linhas possuiam observacoes no campo de populacao
+# essas observacoes foram removidas manualmente
+top100_mun21 <- read_excel('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                           estimativa_dou_2021.xls', sheet = 2, skip = 1) %>%
+  na.omit() %>%
+  select(nome = 'NOME DO MUNICÍPIO',
+         sigla_uf = 'UF',
+         populacao = 'POPULAÇÃO ESTIMADA') %>%
+  top_n(100, populacao)
+
+# juntar tabelas
+top100_mun_cod <- top100_mun20 %>%
+  full_join(top100_mun21, by = c('nome', 'sigla_uf'),
+            suffix = c('2020', '2021')) %>%
+  arrange(desc(populacao2021)) %>%
+  inner_join(cod_mun, by = c('nome', 'sigla_uf')) %>% 
+  select(id_municipio, nome, sigla_uf)
+
+# salvar dataframe com os 100 municipios mais populosos
+write.csv(top100_mun_cod, "top100_mun_cod.csv", row.names = FALSE)
+```
+
 ### Script sd11 {#sd11_script}
 
 voltar para [Tempo de Processos](#sd11)
@@ -832,6 +893,114 @@ voltar para [Clientes Potenciais](#sd32)
 ```
 
 
+
+
+## Script i323 {#i323_script}
+Este script em R refere-se aos [Indicador Compras Públicas (i323)](#i323)
+```{r i323, echo = TRUE, eval = FALSE}
+library(readxl)
+library(tidyverse)
+library("basedosdados")
+
+# Indicador Compras Publicas (i323)
+
+# ------------------------------------------------------------------
+# PASSO 0: preliminares
+# ------------------------------------------------------------------
+
+# definimos uma funcao para desvio padrao populacional
+sdp <- function(x) {
+  sd(x)*(sqrt((length(x)-1)/length(x)))
+}
+
+# importamos tabela com dados dos municipios mais populosos
+top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
+top100_mun_cod <- top100_mun_cod %>% 
+  transform(id_municipio = as.character(id_municipio))
+
+# Definir projeto no Google Cloud
+set_billing_id("workshop-teste-322616")
+
+# ------------------------------------------------------------------
+# PASSO 1: obter despesas e investimentos das prefeituras
+# ------------------------------------------------------------------
+
+# importar planilha com dados de despesas orcamentarias dos municipios
+despesas <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                      d3 Mercado/sd32/i323/finbra.csv', skip = 3)  
+  
+despesas_mun <- despesas %>% 
+  select(id_municipio = 'Cod.IBGE',
+         sigla_uf = UF,
+         Conta,
+         Valor) %>%
+  filter(Conta == '3.0.00.00.00 - Despesas Correntes' | 
+           Conta == '4.4.00.00.00 - Investimentos') %>%
+  group_by(id_municipio, sigla_uf) %>%
+  summarise(desp_inv = sum(Valor)) %>%
+  transform(id_municipio = as.character(id_municipio)) %>%
+  inner_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf')) %>%
+  replace_na(list(desp_inv = 0))
+  
+# importar planilha com dados de brasilia
+despesas_df <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
+                         d3 Mercado/sd32/i323/finbra-df.csv', skip = 3)  
+
+despesas_df <- despesas_df %>% 
+  select(id_estado = 'Cod.IBGE',
+         sigla_uf = UF,
+         Conta,
+         Valor) %>%
+  filter(Conta == '3.0.00.00.00 - Despesas Correntes' |
+           Conta == '4.4.00.00.00 - Investimentos',
+         sigla_uf == 'DF') %>%
+  group_by(sigla_uf) %>%
+  summarise(desp_inv = sum(Valor)) 
+
+despesas_ice <- bind_rows(despesas_df, despesas_mun)
+despesas_ice[1,3] = '5300108'
+despesas_ice[1,4] = 'Brasília'
+
+despesas_ice <- despesas_ice %>%
+  right_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf', 'nome')) %>%
+  replace_na(list(desp_inv = 0)) %>%
+  select(id_municipio, nome, sigla_uf, desp_inv) %>%
+  arrange(desc(desp_inv))
+
+# ------------------------------------------------------------------
+# PASSO 2: obter numero de empresas com pelo menos 1 funcionario
+# ------------------------------------------------------------------
+
+# acessar RAIS estabelecimento pelo Base dos Dados
+# obter numero de empresas com pelo menos um funcionario em cada municipio
+vinculos <- basedosdados::read_sql(
+  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
+  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
+  WHERE ano = 2019", 
+  page_size = 300000)
+
+temvinculo <- vinculos %>% 
+  filter(qtde_vinculos_ativos != 0) %>%
+  group_by(id_municipio) %>%
+  summarise(n_empresas = n()) %>%
+  right_join(top100_mun_cod, by = "id_municipio") %>%
+  select(id_municipio, nome, sigla_uf,n_empresas) %>%
+  arrange(desc(n_empresas))
+
+# ------------------------------------------------------------------
+# PASSO 3: juntar tabelas e calcular indicador
+# ------------------------------------------------------------------
+
+i323 <- despesas_ice %>%
+  inner_join(temvinculo, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
+  mutate(i323 = desp_inv/n_empresas,
+         i323_pad = (i323 - mean(i323))/sdp(i323)) %>%
+  select(id_municipio, nome, sigla_uf, i323, i323_pad) %>%
+  arrange(desc(i323_pad))
+  
+# exportar indicador
+write.csv(i323, "i323.csv", row.names = FALSE)
+```
 
 
 ## Script i411 {#i411_script} 
@@ -2836,110 +3005,3 @@ write.csv(i723, "i723.csv", row.names = FALSE)
 write.csv(i724, "i724.csv", row.names = FALSE)  
 
 ```
-## Script i323 {#i323_script}
-Este script em R refere-se aos [Indicador Compras Públicas (i323)](#i323)
-```{r i323, echo = TRUE, eval = FALSE}
-library(readxl)
-library(tidyverse)
-library("basedosdados")
-
-# Indicador Compras Publicas (i323)
-
-# ------------------------------------------------------------------
-# PASSO 0: preliminares
-# ------------------------------------------------------------------
-
-# definimos uma funcao para desvio padrao populacional
-sdp <- function(x) {
-  sd(x)*(sqrt((length(x)-1)/length(x)))
-}
-
-# importamos tabela com dados dos municipios mais populosos
-top100_mun_cod <- read.csv("top100_mun_cod.csv", stringsAsFactors = FALSE)
-top100_mun_cod <- top100_mun_cod %>% 
-  transform(id_municipio = as.character(id_municipio))
-
-# Definir projeto no Google Cloud
-set_billing_id("workshop-teste-322616")
-
-# ------------------------------------------------------------------
-# PASSO 1: obter despesas e investimentos das prefeituras
-# ------------------------------------------------------------------
-
-# importar planilha com dados de despesas orcamentarias dos municipios
-despesas <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
-                      d3 Mercado/sd32/i323/finbra.csv', skip = 3)  
-  
-despesas_mun <- despesas %>% 
-  select(id_municipio = 'Cod.IBGE',
-         sigla_uf = UF,
-         Conta,
-         Valor) %>%
-  filter(Conta == '3.0.00.00.00 - Despesas Correntes' | 
-           Conta == '4.4.00.00.00 - Investimentos') %>%
-  group_by(id_municipio, sigla_uf) %>%
-  summarise(desp_inv = sum(Valor)) %>%
-  transform(id_municipio = as.character(id_municipio)) %>%
-  inner_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf')) %>%
-  replace_na(list(desp_inv = 0))
-  
-# importar planilha com dados de brasilia
-despesas_df <- read.csv2('C:/Users/User/OneDrive/Documentos/ICE 2021/
-                         d3 Mercado/sd32/i323/finbra-df.csv', skip = 3)  
-
-despesas_df <- despesas_df %>% 
-  select(id_estado = 'Cod.IBGE',
-         sigla_uf = UF,
-         Conta,
-         Valor) %>%
-  filter(Conta == '3.0.00.00.00 - Despesas Correntes' |
-           Conta == '4.4.00.00.00 - Investimentos',
-         sigla_uf == 'DF') %>%
-  group_by(sigla_uf) %>%
-  summarise(desp_inv = sum(Valor)) 
-
-despesas_ice <- bind_rows(despesas_df, despesas_mun)
-despesas_ice[1,3] = '5300108'
-despesas_ice[1,4] = 'Brasília'
-
-despesas_ice <- despesas_ice %>%
-  right_join(top100_mun_cod, by = c('id_municipio', 'sigla_uf', 'nome')) %>%
-  replace_na(list(desp_inv = 0)) %>%
-  select(id_municipio, nome, sigla_uf, desp_inv) %>%
-  arrange(desc(desp_inv))
-
-# ------------------------------------------------------------------
-# PASSO 2: obter numero de empresas com pelo menos 1 funcionario
-# ------------------------------------------------------------------
-
-# acessar RAIS estabelecimento pelo Base dos Dados
-# obter numero de empresas com pelo menos um funcionario em cada municipio
-vinculos <- basedosdados::read_sql(
-  "SELECT ano, id_municipio, qtde_vinculos_ativos,tamanho_estabelecimento 
-  FROM `basedosdados.br_me_rais.microdados_estabelecimentos` 
-  WHERE ano = 2019", 
-  page_size = 300000)
-
-temvinculo <- vinculos %>% 
-  filter(qtde_vinculos_ativos != 0) %>%
-  group_by(id_municipio) %>%
-  summarise(n_empresas = n()) %>%
-  right_join(top100_mun_cod, by = "id_municipio") %>%
-  select(id_municipio, nome, sigla_uf,n_empresas) %>%
-  arrange(desc(n_empresas))
-
-# ------------------------------------------------------------------
-# PASSO 3: juntar tabelas e calcular indicador
-# ------------------------------------------------------------------
-
-i323 <- despesas_ice %>%
-  inner_join(temvinculo, by = c('id_municipio', 'nome', 'sigla_uf')) %>%
-  mutate(i323 = desp_inv/n_empresas,
-         i323_pad = (i323 - mean(i323))/sdp(i323)) %>%
-  select(id_municipio, nome, sigla_uf, i323, i323_pad) %>%
-  arrange(desc(i323_pad))
-  
-# exportar indicador
-write.csv(i323, "i323.csv", row.names = FALSE)
-```
-
