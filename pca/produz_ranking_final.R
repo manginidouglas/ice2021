@@ -109,3 +109,25 @@ openxlsx::write.xlsx(dfs, file = "pca/dados_bonitos.xlsx",
                       overwrite = TRUE)
 
 
+
+
+
+# teste de correlacao entre ice2020 e ice2021 -----------------------------
+
+
+ice2020 <- readxl::read_excel("outros/ice2020/dados.xlsx", 
+                            sheet = "Ranking ICE 2020") %>%
+  arrange(Cidade)
+
+ice2021 <- readxl::read_xlsx("pca/dados_bonitos.xlsx", 
+                             sheet = "ranking_final") %>%
+  arrange(nome) %>%
+  select(1:3, ice_final) %>%
+  filter(nome != "Maraba")
+
+
+c <- cor.test(ice2020$`ICE 2020`, ice2021$ice_final , method = "spearman")
+
+c$estimate
+  
+

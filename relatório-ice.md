@@ -2,11 +2,11 @@
 title: "Relatório Final ICE 2021"
 author: "Douglas Moreira Mangini e Pedro Henrique Borges da Silva"
 date: "02/09/2021"
-output: 
+output:
   pdf_document:
     keep_md: yes
-    toc: TRUE
-    number_sections: TRUE
+    toc: yes
+    number_sections: yes
 urlcolor: blue
 ---
 
@@ -778,6 +778,13 @@ O numerador é representado pela covariância entre a variável independente e a
 Como resultado, são criadas três colunas (ice1, ice2 e ice3) contendo, para cada cidade, os scores para os fatores 1, 2 e 3. O Stata calcula estes scores de modo a cada um destes ter média zero e desvio padrão um.  
 
 Por fim, é criado o índice (variável ice), que soma os scores para os três fatores gerados pela análise fatorial. O último passo é padronizar a soma (ver [padronização](#pad)) Assim, o Índice de Cidades Empreendedoras 2021 é gerado pela variável ice_final. O comando gsort -ice_final deixa as observações em ordem decrescente.
+
+
+# Correlação com ICE2020
+
+## Teste de Correlação  
+
+Queremos saber em que medida o índice atual é diferente do passado. Para tanto, usamos um teste de correlação de Spearman, que mede a dependência estatística entre a classificação de duas variáveis . Excluindo o município de Marabá, que não aparece no ranking passado, encontramos correlação de 34%, e boa evidência estatística de que o cálculo atual e passado são relacionados (p valor = 0.00088).  
 
 
 # Ranking
