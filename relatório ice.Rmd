@@ -2,10 +2,12 @@
 title: "Relatório Final ICE 2021"
 author: "Douglas Moreira Mangini e Pedro Henrique Borges da Silva"
 date: "02/09/2021"
+lang: "pt-br"
 output:
   pdf_document:
     keep_md: yes
     toc: yes
+    toc_depth: 3
     number_sections: yes
 urlcolor: blue
 ---
