@@ -132,7 +132,7 @@ A mudança no determinante Cultura se deve a suspensão das pesquisas Mind Miner
 
 Nesta edição, a manipulação das bases de dados e o cálculo dos indicadores foram feitos exclusivamente no R. Os scripts estão disponíveis no [Apêndice](#apend) deste relatório. Além disso, todos arquivos de dados e scripts estão disponíveis no drive do projeto, disponível neste [link](https://1drv.ms/u/s!AqMHjJQ8NQwSgcFH6a7-tqbNjUz-LA?e=XJhGL2). Por fim, os códigos em R também estão disponíveis em repositório [GitHub](https://github.com/manginidouglas/ice2021).
 
-Os indicadores foram calculados de maneira paralela pelos bolsistas. Alguns scripts fazem referência a um dataframe chamado `municode`, enquanto outros se referem a `top100_mun_cod`. Ambos possuem a mesma informação: a lista dos 101 municípios que compõem o ICE. Os scripts que geram esses dataframes estão disponíveis no [Apêndice](municode). 
+Os indicadores foram calculados de maneira paralela pelos bolsistas. Alguns scripts fazem referência a um dataframe chamado `municode`, enquanto outros se referem a `top100_mun_cod`. Ambos possuem a mesma informação: a lista dos 101 municípios que compõem o ICE. Os scripts que geram esses dataframes estão disponíveis no [Apêndice](#municode). 
 
 \newpage
 
