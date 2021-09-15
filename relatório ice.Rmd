@@ -1,6 +1,9 @@
 ---
 title: "Relatório Final ICE 2021"
-author: "Douglas Moreira Mangini e Pedro Henrique Borges da Silva"
+author: 
+- Douglas Moreira Mangini
+- Pedro Henrique Borges da Silva
+- Arnaldo Mauerberg Jr. (supervisão)
 date: "02/09/2021"
 lang: "pt-br"
 output:
@@ -726,7 +729,7 @@ O tratamento dos dados e cálculo do índice foram feitos no R. O script encontr
 ## Subdeterminante Iniciativa
 ### Indicador Pesquisas com o Termo “Empreendedor” (i711) {#i711}
 
-Este indicador reflete a quantidade de  buscas na internet pela palavra-chave “empreendedor” no município, reportado pelo Google Trends. Os seguintes passos foram tomados para se obter o indicador:
+Este indicador reflete a quantidade de  buscas na internet pela palavra-chave “empreendedor” no município, reportado pelo Google Trends. Nas edições anteriores, essa pontuação era dividida pela estimativa populacional do município, como forma de ponderação. Contudo, nesta edição, optou-se utilizar a diretamente a pontuação no Google Trends, uma vez que esta pontuação já é normalizada pelo período e pelo local. Segundo o [Google](https://support.google.com/trends/answer/4365533?hl=en&ref_topic=6248052), "cada dado é dividido pelo total de buscas da região geográfica e o período de tempo que ele representa, para comparar a popularidade relativa". Esta mudança metodológica foi aprovada pelo supervisor do trabalho, o professor Arnaldo Mauerberg. Os seguintes passos foram tomados para se obter o indicador:
 
 1. Obter informações a partir do site Google Trends; 
   + No site, pesquisar pela palavra-chave, selecionar “Brazil”, “2020”, “All Categories”, “Web Search”; 
