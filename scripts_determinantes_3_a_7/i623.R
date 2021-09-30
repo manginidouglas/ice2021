@@ -27,7 +27,7 @@ top100_mun_cod <- top100_mun_cod %>%
 
 # importamos tabela com as ocupacoes da CBO 2002 de interesse (subgrupos principais 12, 13 e 14) feita manualmente
 # essa tabela nao e usada diretamente neste codigo, mas e usada para auxiliar a criacao da query no Banco dos Dados
-ocupacoes <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/d6 Capital Humano/sd62/CBO2002 - Ocupação Subgrupo Principal 12 13 14.xlsx", 
+ocupacoes <- read_excel("C:/Users/User/OneDrive/Documentos/ICE 2021/d6 Capital Humano/sd62/CBO2002 - OcupaÃ§Ã£o Subgrupo Principal 12 13 14.xlsx", 
                         col_types = c("text", "text"))
 
 # importamos os dados da RAIS com vinculos de interesse e dos municipios de interesse (100 mais populosos)
@@ -76,12 +76,13 @@ dirigentes_sal <- top100_mun_cod %>% left_join(dirigentes, by = "id_municipio") 
 # PASSO 2: calcular indicador
 # ------------------------------------------------------------------
 
-#calcular indice i623
+# calcular indicador i623
 i623 <- dirigentes_mun %>% 
         inner_join(dirigentes_sal, by = c("id_municipio", "nome", "sigla_uf")) %>%
-        mutate(i623 = salario_dirigentes/n_dirigentes) %>%
+        mutate(i623_inv = salario_dirigentes/n_dirigentes,
+               i623 = 1/i623_inv) %>%
         mutate(i623_pad =  (i623 - mean(i623))/sdp(i623)) %>%
-        select(id_municipio, nome, sigla_uf, i623, i623_pad) %>%
+        select(id_municipio, nome, sigla_uf, i623_inv, i623, i623_pad) %>%
         arrange(desc(i623_pad))
 
 # salvamos o arquivo
