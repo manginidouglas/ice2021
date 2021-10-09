@@ -837,6 +837,10 @@ Por fim, é criado o índice (variável ice), que soma os scores para os três f
 Queremos saber em que medida o índice atual é diferente do passado. Para tanto, usamos um teste de correlação de Spearman, que mede a dependência estatística entre a classificação de duas variáveis . Excluindo o município de Marabá, que não aparece no ranking passado, encontramos correlação de 34%, e boa evidência estatística de que o cálculo atual e passado são relacionados (p valor = 0.00088).  
 
 
+# Efeito Parcial da Cultura
+
+Medimos a importância do determinante cultura sobre o ranking de municípios com um teste de correlação. Nele, comparamos o índice final, com e sem a informação sobre cultura. Encontramos correlação unitária e um p-valor próximo de zero, o que indica que este indicador pouco participa no ordenamento de municípios.  
+
 # Ranking
 
 ```{r ranking_final, eval=TRUE, include=TRUE, echo=FALSE}
